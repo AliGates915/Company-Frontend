@@ -153,7 +153,7 @@ function SubHead() {
         };
 
         console.log("Data to send to backend:", dataToSend);
-        console.log("Data to send to backend:", dataToSend);
+        
 
         try {
             const response = await axios.post("/subHead", dataToSend); // Adjust the endpoint as necessary

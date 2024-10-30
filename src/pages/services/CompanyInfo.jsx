@@ -1,110 +1,138 @@
 /* eslint-disable react/react-in-jsx-scope */
-import {useEffect, useState ,useRef} from "react";
+import { useEffect, useState, useRef } from "react";
 import Tooltip from "@mui/material/Tooltip";
 import DriveFolderUploadOutlinedIcon from "@mui/icons-material/DriveFolderUploadOutlined";
 import axios from "axios";
 
 const CompanyInfo = () => {
-  const [formData, setFormData] = useState({
-    companyName: '',
-    code: '',
-    address: '',
-    telephone: '',
-    mobile: '',
-    fax: '',
-    email: '',
-    contactPerson: '',
-    ntn: '',
-    gst: '',
-    logo: null, // Make sure this is correctly set if you're handling file uploads
-  });
-  
+  const [companyName, setCompanyName] = useState('');
+  const [companyCode, setCompanyCode] = useState('');
+  const [address, setAddress] = useState('');
+  const [telephone, setTelephone] = useState('');
+  const [mobile, setMobile] = useState('');
+  const [fax, setFax] = useState('');
+  const [email, setEmail] = useState('');
+  const [contactPerson, setContactPerson] = useState('');
+  const [ntn, setNtn] = useState('');
+  const [gst, setGst] = useState('');
+  const [logo, setLogo] = useState(null); // Optional field for logo
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
+  const fileInputRef = useRef(null);
+  
   const handleInputChange = (e) => {
     const { name, value, type, files } = e.target;
-    setFormData({
-        ...formData,
-        [name]: type === 'file' ? files[0] : value, // Handle file input
-    });
-};
-
-  const fileInputRef = useRef(null);
-  const handleFileClick = () => {
-    // Trigger click on the hidden file input
-    fileInputRef.current.click();
+    if (type === 'file') {
+      setLogo(files[0]);
+    } else {
+      switch (name) {
+        case 'companyName':
+          setCompanyName(value);
+          break;
+        case 'companyCode':
+          setCompanyCode(value);
+          break;
+        case 'address':
+          setAddress(value);
+          break;
+        case 'telephone':
+          setTelephone(value);
+          break;
+        case 'mobile':
+          setMobile(value);
+          break;
+        case 'fax':
+          setFax(value);
+          break;
+        case 'email':
+          setEmail(value);
+          break;
+        case 'contactPerson':
+          setContactPerson(value);
+          break;
+        case 'ntn':
+          setNtn(value);
+          break;
+        case 'gst':
+          setGst(value);
+          break;
+        default:
+          break;
+      }
+    }
   };
 
-
-
+  const handleFileClick = () => {
+    fileInputRef.current.click();
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage("");
     setSuccessMessage("");
 
-    if (!formData.companyName || !formData.gst) {
-        setErrorMessage("Company Name and GST are required fields.");
-        return;
+    if (!companyName || !gst) {
+      setErrorMessage("Company Name and GST are required fields.");
+      return;
     }
 
     const formDataToSend = new FormData();
 
     // Handle file upload to Cloudinary
     let logoUrl = null;
-    if (formData.logo) {
-        const data = new FormData();
-        data.append("file", formData.logo);
-        data.append("upload_preset", "upload");
+    if (logo) {
+      const data = new FormData();
+      data.append("file", logo);
+      data.append("upload_preset", "upload");
 
-        try {
-            const uploadRes = await axios.post("https://api.cloudinary.com/v1_1/daexycwc7/image/upload", data);
-            logoUrl = uploadRes.data.url;
-        } catch (uploadError) {
-            console.error('File upload error:', uploadError.response ? uploadError.response.data : uploadError.message);
-            setErrorMessage("Error uploading logo.");
-            return;
-        }
+      try {
+        const uploadRes = await axios.post("https://api.cloudinary.com/v1_1/daexycwc7/image/upload", data);
+        logoUrl = uploadRes.data.url;
+      } catch (uploadError) {
+        console.error('File upload error:', uploadError.response ? uploadError.response.data : uploadError.message);
+        setErrorMessage("Error uploading logo.");
+        return;
+      }
     }
 
-    // Append form data to formDataToSend
-    formDataToSend.append("companyName", formData.companyName);
-    formDataToSend.append("companyCode", formData.code);
-    if (logoUrl) formDataToSend.append("logo", logoUrl);
-    formDataToSend.append("address", formData.address);
-    formDataToSend.append("telephone", formData.telephone);
-    formDataToSend.append("mobile", formData.mobile);
-    formDataToSend.append("fax", formData.fax);
-    formDataToSend.append("email", formData.email);
-    formDataToSend.append("contactPerson", formData.contactPerson);
-    formDataToSend.append("ntn", formData.ntn);
-    formDataToSend.append("gst", formData.gst);
+    const dataToSend = {
+      companyName,
+      gst,
+      logoUrl,
+      address,
+      telephone,
+      mobile,
+      contactPerson,
+      companyCode,
+      ntn,
+      fax,
+      email,
+  }; 
+
+  console.log("Data to send to backend:", dataToSend);
 
     // Log each field for debugging
     for (const [key, value] of formDataToSend.entries()) {
-        console.log(`${key}: ${value}`);
+      console.log(`${key}: ${value}`);
     }
 
     try {
-        const response = await fetch("http://localhost:8000/api/companies", {
-            method: "POST",
-            body: formDataToSend,
-        });
+      const response = await fetch("http://localhost:8000/api/companies", dataToSend);
 
-        if (response.ok) {
-            const responseData = await response.json();
-            setSuccessMessage(responseData.message || "Company created successfully!");
-        } else {
-            const errorData = await response.json();
-            console.error('Error response from server:', errorData); // Log the error details
-            setErrorMessage(errorData.message || "An error occurred");
-        }
+      if (response.ok) {
+        const responseData = await response.json();
+        setSuccessMessage(responseData.message || "Company created successfully!");
+      } else {
+        const errorData = await response.json();
+        console.error('Error response from server:', errorData); // Log the error details
+        setErrorMessage(errorData.message || "An error occurred");
+      }
     } catch (error) {
-        console.error('Error:', error);
-        setErrorMessage("An error occurred");
+      console.error('Error:', error);
+      setErrorMessage("An error occurred");
     }
-};
+  };
 
   return (
     <div>
@@ -114,7 +142,6 @@ const CompanyInfo = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="ml-20">
-
           {/* Company Name */}
           <div className="flex flex-row">
             <Tooltip title={errorMessage || "Company name is required"} open={!!errorMessage}>
@@ -125,7 +152,7 @@ const CompanyInfo = () => {
                   name="companyName"
                   className="w-[24rem] text-gray-800 bg-transparent text-sm border-b border-gray-300 focus:border-blue px-2 py-2 outline-none"
                   placeholder="Enter company name"
-                  value={formData.companyName}
+                  value={companyName}
                   onChange={handleInputChange}
                   required
                 />
@@ -136,10 +163,10 @@ const CompanyInfo = () => {
                 <label className="text-gray-800 text-lg mb-2 block">Code *</label>
                 <input
                   type="text"
-                  name="code"
+                  name="companyCode"
                   className="w-[16rem] text-gray-800 bg-transparent text-sm border-b border-gray-300 focus:border-blue px-2 py-2 outline-none"
                   placeholder="Enter code"
-                  value={formData.code}
+                  value={companyCode}
                   onChange={handleInputChange}
                   required
                 />
@@ -171,7 +198,7 @@ const CompanyInfo = () => {
                 name="address"
                 className="w-[42rem] bg-transparent text-gray-800 text-sm border-b border-gray-300 focus:border-blue px-2 py-2 outline-none"
                 placeholder="Enter Address"
-                value={formData.address}
+                value={address}
                 onChange={handleInputChange}
                 required
               />
@@ -188,7 +215,7 @@ const CompanyInfo = () => {
                   name="telephone"
                   className="w-[24rem] bg-transparent text-gray-800 text-sm border-b border-gray-300 focus:border-blue px-2 py-2 outline-none"
                   placeholder="Enter telephone"
-                  value={formData.telephone}
+                  value={telephone}
                   onChange={handleInputChange}
                   required
                 />
@@ -203,7 +230,7 @@ const CompanyInfo = () => {
                   name="mobile"
                   className="w-[24rem] bg-transparent text-gray-800 text-sm border-b border-gray-300 focus:border-blue px-2 py-2 outline-none"
                   placeholder="Enter mobile"
-                  value={formData.mobile}
+                  value={mobile}
                   onChange={handleInputChange}
                   required
                 />
@@ -217,11 +244,11 @@ const CompanyInfo = () => {
               <div>
                 <label className="text-gray-800 text-lg mb-2 block">Fax *</label>
                 <input
-                  type="text"
+                  type="tel"
                   name="fax"
                   className="w-[24rem] bg-transparent text-gray-800 text-sm border-b border-gray-300 focus:border-blue px-2 py-2 outline-none"
                   placeholder="Enter fax"
-                  value={formData.fax}
+                  value={fax}
                   onChange={handleInputChange}
                   required
                 />
@@ -236,7 +263,7 @@ const CompanyInfo = () => {
                   name="email"
                   className="w-[24rem] bg-transparent text-gray-800 text-sm border-b border-gray-300 focus:border-blue px-2 py-2 outline-none"
                   placeholder="Enter email"
-                  value={formData.email}
+                  value={email}
                   onChange={handleInputChange}
                   required
                 />
@@ -252,9 +279,9 @@ const CompanyInfo = () => {
                 <input
                   type="text"
                   name="contactPerson"
-                  className="w-[42rem] bg-transparent text-gray-800 text-sm border-b border-gray-300 focus:border-blue px-2 py-2 outline-none"
-                  placeholder="Enter Contact Person"
-                  value={formData.contactPerson}
+                  className="w-[24rem] bg-transparent text-gray-800 text-sm border-b border-gray-300 focus:border-blue px-2 py-2 outline-none"
+                  placeholder="Enter contact person"
+                  value={contactPerson}
                   onChange={handleInputChange}
                   required
                 />
@@ -269,7 +296,7 @@ const CompanyInfo = () => {
                   name="ntn"
                   className="w-[24rem] bg-transparent text-gray-800 text-sm border-b border-gray-300 focus:border-blue px-2 py-2 outline-none"
                   placeholder="Enter NTN"
-                  value={formData.ntn}
+                  value={ntn}
                   onChange={handleInputChange}
                   required
                 />
@@ -284,7 +311,7 @@ const CompanyInfo = () => {
                   name="gst"
                   className="w-[24rem] bg-transparent text-gray-800 text-sm border-b border-gray-300 focus:border-blue px-2 py-2 outline-none"
                   placeholder="Enter GST"
-                  value={formData.gst}
+                  value={gst}
                   onChange={handleInputChange}
                   required
                 />
@@ -293,18 +320,16 @@ const CompanyInfo = () => {
           </div>
 
           {/* Submit Button */}
-          <div className="flex justify-center mt-10">
-            <button
-              type="submit"
-              className="bg-[#3116ae] text-white py-2 px-8 rounded-md hover:bg-[#270da8] transition duration-200"
-            >
-              Submit
-            </button>
-          </div>
+          <button
+            type="submit"
+            className="mt-8 bg-[#3116ae] text-white font-bold py-2 px-4 rounded"
+          >
+            Create Company
+          </button>
 
-          {/* Messages */}
-          {errorMessage && <p className="text-red-600">{errorMessage}</p>}
-          {successMessage && <p className="text-green-600">{successMessage}</p>}
+          {/* Success/Error Message */}
+          {errorMessage && <div className="mt-4 text-red-600">{errorMessage}</div>}
+          {successMessage && <div className="mt-4 text-green-600">{successMessage}</div>}
         </form>
       </div>
     </div>
