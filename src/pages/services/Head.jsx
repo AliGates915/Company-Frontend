@@ -30,8 +30,8 @@ function Head() {
 
         if (selectedCompany) {
             setSelectedCompanyType(companyName);
-            setCompanyCode(selectedCompany.companyCode); // Set the company code
-            setHeadCode(`${selectedCompany.companyCode}${String(sequenceNumber).padStart(2, '0')}`); // Generate initial head code
+            setCompanyCode(selectedCompany.code); // Set the company code
+            setHeadCode(`${selectedCompany.code}${String(sequenceNumber).padStart(2, '0')}`); // Generate initial head code
         }
 
         setIsCompanyTypeDropdownOpen(false);

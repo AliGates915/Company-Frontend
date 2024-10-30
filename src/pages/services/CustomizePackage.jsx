@@ -1,3 +1,4 @@
+/* eslint-disable react/react-in-jsx-scope */
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
@@ -142,6 +143,7 @@ const CustomizePackage = () => {
   const filteredDestinations = selectCountry
   ? destinations.filter(destination => destination.countryName === selectCountry)
   : [];
+  
   console.log("filteredDestinations ", filteredDestinations )
   const fetchTourTypes = async () => {
     try {

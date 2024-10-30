@@ -1,22 +1,51 @@
 /* eslint-disable react/react-in-jsx-scope */
 import { useState, useEffect, useRef } from "react";
 import { FaEdit, FaTrashAlt } from "react-icons/fa";
+import axios from "axios";
 
 function AccountHead() {
-    const [facilityName, setFacilityName] = useState("");
-    const [tourTypes, setTourTypes] = useState([]); // To handle tour types
-    const [isTourTypeDropdownOpen, setIsTourTypeDropdownOpen] = useState(false);
-    const [selectedTourType, setSelectedTourType] = useState("");
+    const [accountName, setAccountName] = useState("");
+    const [accountTypes, setAccountTypes] = useState([]);
 
-    const dropdownRef = useRef(null); // Ref for the dropdown
+    const [isSubHeadTypeDropdownOpen, setIsSubHeadTypeDropdownOpen] = useState(false);
+
+    const [date, setDate] = useState("");
+    const [debitCheck, setDebitCheck] = useState("");
+    const [amountCheck, setAmountCheck] = useState("");
+    const [accountCode, setAccountCode] = useState("");
+    const [balance, setBalance] = useState("");
+
+
+
+    const [subHeadName, setSubHeadName] = useState("");
+    const [headCode, setHeadCode] = useState("");
+    const [subHeadCode, setSubHeadCode] = useState("");
+    const [companyCode, setCompanyCode] = useState("");
+    const [headTypes, setHeadTypes] = useState([]);
+    const [companyTypes, setCompanyTypes] = useState([]);
+    const [, setIsCompanyTypeDropdownOpen] = useState(false);
+    const [selectedCompanyType, setSelectedCompanyType] = useState("");
+    const [, setIsHeadTypeDropdownOpen] = useState(false);
+    const [selectedHeadType, setSelectedHeadType] = useState("");
+    const [selectedSubHeadType, setSelectedSubHeadType] = useState("");
+    const [description, setDescription] = useState('');
+    const [subHeadTypes, setSubHeadTypes] = useState([]);
+    const [sequenceNumber, setSequenceNumber] = useState(1);
+    const dropdownRef = useRef(null);
+
 
     // Toggle function for dropdown
-    const toggleTourTypeDropdown = () => {
-        setIsTourTypeDropdownOpen((prev) => !prev);
+
+    const toggleSubHeadTypeDropdown = () => {
+        setIsSubHeadTypeDropdownOpen((prev) => !prev);
     };
 
+
     const closeDropdowns = () => {
-        setIsTourTypeDropdownOpen(false);
+        setIsSubHeadTypeDropdownOpen(false);
+        setIsCompanyTypeDropdownOpen(false);
+        setIsHeadTypeDropdownOpen(false);
+        setIsHeadTypeDropdownOpen(false);
     };
 
     useEffect(() => {
@@ -34,87 +63,6 @@ function AccountHead() {
         };
     }, []);
 
-    const handleSave = async () => {
-        if (!facilityName || !selectedTourType) {
-            alert("Please enter both a facility name and tour type.");
-            return;
-        }
-
-        const dataToSend = {
-            facilityName,
-            tourName: selectedTourType,
-        };
-
-        console.log("Data to send to backend:", dataToSend);
-    };const data = [
-        {
-          SR: 1,
-          MAIN_HEAD: "Revenue",
-          SUB_HEAD: "Product Sales",
-          CODE: "R101",
-          TITLE: "Online Store Sales",
-          OPENING: 15000,
-        },
-        {
-          SR: 2,
-          MAIN_HEAD: "Expenses",
-          SUB_HEAD: "Marketing",
-          CODE: "E201",
-          TITLE: "Social Media Ads",
-          OPENING: 3000,
-        },
-        {
-          SR: 3,
-          MAIN_HEAD: "Assets",
-          SUB_HEAD: "Inventory",
-          CODE: "A301",
-          TITLE: "Warehouse Supplies",
-          OPENING: 12000,
-        },
-        {
-          SR: 4,
-          MAIN_HEAD: "Liabilities",
-          SUB_HEAD: "Loans",
-          CODE: "L401",
-          TITLE: "Bank Loan",
-          OPENING: 50000,
-        },
-        {
-          SR: 5,
-          MAIN_HEAD: "Revenue",
-          SUB_HEAD: "Subscription Services",
-          CODE: "R102",
-          TITLE: "Premium Memberships",
-          OPENING: 8000,
-        },
-        {
-          SR: 6,
-          MAIN_HEAD: "Expenses",
-          SUB_HEAD: "Salaries",
-          CODE: "E202",
-          TITLE: "Employee Wages",
-          OPENING: 25000,
-        },
-        {
-          SR: 7,
-          MAIN_HEAD: "Assets",
-          SUB_HEAD: "Property",
-          CODE: "A302",
-          TITLE: "Office Building",
-          OPENING: 100000,
-        },
-        {
-          SR: 8,
-          MAIN_HEAD: "Revenue",
-          SUB_HEAD: "Consulting",
-          CODE: "R103",
-          TITLE: "Consulting Fees",
-          OPENING: 12000,
-        },
-        
-      ];
-      
-
 
     const handleEdit = async (id) => {
         const updatedFacilityName = prompt("Enter the new facility name:");
@@ -131,6 +79,173 @@ function AccountHead() {
             return;
     };
 
+
+    // Fetch functions
+    useEffect(() => {
+
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                closeDropdowns();
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
+    useEffect(() => {
+        fetchCompanyTypes();
+        fetchAccountHead()
+        fetchHead()
+    }, []);
+
+    // Fetch company types
+    const fetchCompanyTypes = async () => {
+        try {
+            const response = await axios.get("/heads"); // Adjust the endpoint if needed
+            setCompanyTypes(response.data);
+            console.log("Company Data", response.data);
+        } catch (error) {
+            console.error("Error fetching company types:", error);
+        }
+    };
+
+    const fetchHead = async () => {
+        try {
+            const response = await axios.get("/subHead"); // Adjusted to match the router setup
+            setHeadTypes(Array.isArray(response.data) ? response.data : []);
+            setSubHeadTypes(Array.isArray(response.data) ? response.data : []);
+            console.log("Data", response.data);
+        } catch (error) {
+            console.error("Error fetching packages types:", error);
+            if (error.response) {
+                console.error("Response data:", error.response.data);
+                console.error("Response status:", error.response.status);
+            }
+        }
+    };
+
+    // Fetch heads based on selected company code
+    const fetchHeadForCompany = async (companyCode) => {
+        try {
+            const response = await axios.get(`/heads?companyCode=${companyCode}`);
+            setHeadTypes(response.data);  // Set filtered heads based on companyCode
+            console.log("Filtered Head Data", response.data);  // Verify correct data is fetched
+        } catch (error) {
+            console.error("Error fetching heads for company:", error);
+        }
+    };
+
+    const handleHeadTypeSelect = (event) => {
+        const headName = event.target.value;
+        const selectedHead = headTypes.find(head => head.headName === headName);
+    
+        if (selectedHead) {
+            setSelectedHeadType(headName);
+            setHeadCode(selectedHead.headCode);
+            
+            // Use backticks to correctly set subHeadCode with template literals
+            setSubHeadCode(`${selectedHead.headCode}${String(sequenceNumber).padStart(2, '0')}`);
+        }
+        setIsHeadTypeDropdownOpen(false);
+    };
+
+
+    // Handle company selection
+    const handleCompanySelect = (event) => {
+        const companyName = event.target.value;
+        const selectedCompany = companyTypes.find(company => company.companyName === companyName);
+
+        if (selectedCompany) {
+            setSelectedCompanyType(companyName);
+            setCompanyCode(selectedCompany.companyCode);
+            fetchHeadForCompany(selectedCompany.companyCode);
+        }
+    };
+
+    // Handle subhead change and update code
+
+    const handleSubHeadChange = (subHeadName) => {
+        const selectedSubHead = subHeadTypes.find(head => head.subHeadName === subHeadName);
+
+        if (selectedSubHead) {
+            setSelectedSubHeadType(subHeadName);
+            setSubHeadCode(selectedSubHead.subHeadCode);
+
+            // Use backticks to correctly set subHeadCode with template literals
+            setAccountCode(`${selectedSubHead.subHeadCode}${String(sequenceNumber).padStart(2, '0')}`);
+        }
+        setIsSubHeadTypeDropdownOpen(false);
+    };
+
+    const handleAccountChange = (e) => {
+        setAccountName(e.target.value);
+        // Generate the next subhead code based on current company and head codes
+        const newAccountCode = `${subHeadCode}${String(sequenceNumber).padStart(2, '0')}`;
+        setAccountCode(newAccountCode);
+        // Increment the sequence number for the next subhead entry
+        setSequenceNumber(prev => prev + 1);
+    };
+
+    const fetchAccountHead = async () => {
+        try {
+            const response = await axios.get("/accountHead");
+            setAccountTypes(response.data);  // Set filtered heads based on companyCode
+            console.log("Filtered Sub Head Data", response.data);  // Verify correct data is fetched
+        } catch (error) {
+            console.error("Error fetching heads for company:", error);
+        }
+    };
+
+
+
+
+    const handleSave = async () => {
+        if (!selectedHeadType || !selectedCompanyType) {
+            alert("Please enter both a facility name and tour type.");
+            return;
+        }
+
+        const dataToSend = {
+            companyName: selectedCompanyType,
+            companyCode,
+            headName: selectedHeadType,
+            headCode,
+            accountName,
+            accountCode,
+            balance,
+            amountCheck,
+            debitCheck,
+            subHeadCode,
+            date,
+            subHeadName, selectedSubHeadType,
+            description,
+        };
+
+        console.log("Data to send to backend:", dataToSend);
+
+
+        try {
+            const response = await axios.post("/accountHead", dataToSend); // Adjust the endpoint as necessary
+            console.log("Saved head response:", response.data);
+            if (response.data.status === "201") {
+                alert("Data is successfully saved.")
+            }
+            setAccountTypes([...accountTypes, response.data]);
+            setSelectedCompanyType("");
+            setSelectedSubHeadType("");
+            setSelectedHeadType("");
+            setSubHeadName("");
+            setBalance("");
+            setDescription("");
+        } catch (error) {
+            console.error("Error saving head:", error);
+        }
+    };
+
+
     return (
         <>
             <div className="flex justify-center mb-4 py-3 bg-[#3116ae]">
@@ -141,43 +256,28 @@ function AccountHead() {
                     {/* company */}
                     <div>
                         <label className="text-gray-800 font-semibold">Company</label>
-                        <div ref={dropdownRef} className="relative">
-                            <div
-                                className="flex items-center justify-between w-[24rem] border rounded px-2 py-2 cursor-pointer"
-                                onClick={toggleTourTypeDropdown}
-                            >
-                                <input
-                                    type="text"
-                                    className="bg-transparent text-gray-800 text-sm outline-none cursor-pointer w-full"
-                                    value={selectedTourType || "Select Company Name"}
-                                    readOnly
-                                />
-                                <span className="ml-2 text-gray-800">▼</span>
-                            </div>
-                            {isTourTypeDropdownOpen && (
-                                <div className="absolute mt-1 w-full bg-white shadow-lg rounded max-h-40 overflow-auto z-50">
-                                    <ul className="divide-y divide-gray-100">
-                                        {tourTypes.map((tour, index) => (
-                                            <li
-                                                className="px-4 py-2 text-gray-800 hover:bg-blue-100 cursor-pointer"
-                                                key={index}
-                                                onClick={() => setSelectedTourType(tour.tourName)}
-                                            >
-                                                {tour.tourName}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )}
-                        </div>
+                        <select
+                            value={selectedCompanyType}
+                            onChange={handleCompanySelect}
+                            className="w-[22rem] border text-gray-800 rounded outline-none px-2 py-2 cursor-pointer"
+                        >
+                            <option value="" disabled>Select a Company</option>
+                            {companyTypes.map((company, index) => (
+                                <option key={index} value={company.companyName}>
+                                    {company.companyName}
+                                </option>
+                            ))}
+                        </select>
                     </div>
+
                     <div>
                         <label className="text-gray-800 ml-28 font-semibold">Code</label>
                         <div className="relative">
                             <input
                                 type="text"
+                                value={companyCode}
                                 className="bg-transparent text-sm ml-28 text-gray-800 outline-none w-[8rem] border rounded px-2 py-2"
-                                placeholder="02"
+                                readOnly
                             />
                         </div>
                     </div>
@@ -186,35 +286,18 @@ function AccountHead() {
                 <div className="grid grid-cols-2 gap-4 mb-4">
                     <div>
                         <label className="text-gray-800 font-semibold">Head</label>
-                        <div ref={dropdownRef} className="relative">
-                            <div
-                                className="flex items-center justify-between w-[24rem] border rounded px-2 py-2 cursor-pointer"
-                                onClick={toggleTourTypeDropdown}
-                            >
-                                <input
-                                    type="text"
-                                    className="bg-transparent text-gray-800 text-sm outline-none cursor-pointer w-full"
-                                    value={selectedTourType || "Select Main Head"}
-                                    readOnly
-                                />
-                                <span className="ml-2 text-gray-800">▼</span>
-                            </div>
-                            {isTourTypeDropdownOpen && (
-                                <div className="absolute mt-1 w-full bg-white shadow-lg rounded max-h-40 overflow-auto z-50">
-                                    <ul className="divide-y divide-gray-100">
-                                        {tourTypes.map((tour, index) => (
-                                            <li
-                                                className="px-4 py-2 text-gray-800 hover:bg-blue-100 cursor-pointer"
-                                                key={index}
-                                                onClick={() => setSelectedTourType(tour.tourName)}
-                                            >
-                                                {tour.tourName}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )}
-                        </div>
+                        <select
+                            value={selectedHeadType}
+                            onChange={handleHeadTypeSelect  }
+                            className="w-[22rem] border text-gray-800 rounded outline-none px-2 py-2 cursor-pointer"
+                        >
+                            <option value="" disabled>Select a Head</option>
+                            {headTypes.map((head, index) => (
+                                <option key={index} value={head.headName}>
+                                    {head.headName}
+                                </option>
+                            ))}
+                        </select>
                     </div>
 
                     {/* code */}
@@ -223,8 +306,9 @@ function AccountHead() {
                         <div className="relative">
                             <input
                                 type="text"
+                                value={headCode}
                                 className="bg-transparent text-sm ml-28 text-gray-800 outline-none w-[8rem] border rounded px-2 py-2"
-                                placeholder="02"
+                                readOnly
                             />
                         </div>
                     </div>
@@ -233,26 +317,27 @@ function AccountHead() {
                         <div ref={dropdownRef} className="relative">
                             <div
                                 className="flex items-center justify-between w-[24rem] border rounded px-2 py-2 cursor-pointer"
-                                onClick={toggleTourTypeDropdown}
+                                onClick={toggleSubHeadTypeDropdown}
                             >
                                 <input
                                     type="text"
                                     className="bg-transparent text-gray-800 text-sm outline-none cursor-pointer w-full"
-                                    value={selectedTourType || "Select Sub Head"}
+                                    value={selectedSubHeadType || "Select Sub Head"}
                                     readOnly
                                 />
                                 <span className="ml-2 text-gray-800">▼</span>
                             </div>
-                            {isTourTypeDropdownOpen && (
-                                <div className="absolute mt-1 w-full bg-white shadow-lg rounded max-h-40 overflow-auto z-50">
+                            {isSubHeadTypeDropdownOpen && (
+                                <div className="absolute mt-1 w-[24rem] bg-white shadow-lg
+                                 rounded max-h-40 overflow-auto z-50">
                                     <ul className="divide-y divide-gray-100">
-                                        {tourTypes.map((tour, index) => (
+                                        {subHeadTypes.map((tour, index) => (
                                             <li
                                                 className="px-4 py-2 text-gray-800 hover:bg-blue-100 cursor-pointer"
                                                 key={index}
-                                                onClick={() => setSelectedTourType(tour.tourName)}
+                                                onClick={() => handleSubHeadChange(tour.subHeadName)}
                                             >
-                                                {tour.tourName}
+                                                {tour.subHeadName}
                                             </li>
                                         ))}
                                     </ul>
@@ -267,8 +352,9 @@ function AccountHead() {
                         <div className="relative">
                             <input
                                 type="text"
+                                value={subHeadCode}
                                 className="bg-transparent text-sm ml-28 text-gray-800 outline-none w-[8rem] border rounded px-2 py-2"
-                                placeholder="04"
+                                readOnly
                             />
                         </div>
                     </div>
@@ -280,8 +366,8 @@ function AccountHead() {
                             type="text"
                             className="bg-transparent text-sm text-gray-800 outline-none w-[24rem] border rounded px-2 py-2"
                             placeholder="Enter account title"
-                            value={facilityName}
-                            onChange={(e) => setFacilityName(e.target.value)}
+                            value={accountName}
+                            onChange={handleAccountChange}
                         />
                     </div>
 
@@ -290,8 +376,9 @@ function AccountHead() {
                         <div className="relative">
                             <input
                                 type="text"
+                                value={accountCode}
                                 className="bg-transparent text-sm ml-28 text-gray-800 outline-none w-[8rem] border rounded px-2 py-2"
-                                placeholder="02-02-01"
+
                             />
                         </div>
                     </div>
@@ -301,8 +388,10 @@ function AccountHead() {
                         <textarea
                             type="text"
                             rows={3}
+                            value={description}
                             className="bg-transparent text-sm  text-gray-800 outline-none w-[34.5rem] border rounded px-2 py-2"
                             placeholder="Enter Description"
+                            onChange={(e) => setDescription(e.target.value)}
                         />
                     </div>
                 </div>
@@ -311,12 +400,12 @@ function AccountHead() {
                     <div className="relative flex flex-row items-center">
                         <label className="text-gray-800 font-normal">Opening Balance</label>
                         <input
-                            type="text"
+                            type="Number"
                             className="bg-transparent text-sm mr-8 text-gray-800 
                             outline-none w-[8rem] ml-3 border rounded px-2 py-2"
                             placeholder="balance..."
-                            value={facilityName}
-                            onChange={(e) => setFacilityName(e.target.value)}
+                            value={balance}
+                            onChange={(e) => setBalance(e.target.value)}
                         />
                     </div>
                     {/* opening date */}
@@ -327,8 +416,8 @@ function AccountHead() {
                             className="bg-transparent text-sm ml-3 text-gray-800 outline-none
                              w-[8rem] border rounded px-2 py-2"
                             placeholder="balance..."
-                            value={facilityName}
-                            onChange={(e) => setFacilityName(e.target.value)}
+                            value={date}
+                            onChange={(e) => setDate(e.target.value)}
                         />
                     </div>
                     {/* checkbox */}
@@ -339,8 +428,8 @@ function AccountHead() {
                                 className="bg-transparent text-sm mx-2 text-gray-800 outline-none
                              border rounded px-2 py-2"
                                 placeholder="balance..."
-                                value={facilityName}
-                                onChange={(e) => setFacilityName(e.target.value)}
+                                value={debitCheck}
+                                onChange={(e) => setDebitCheck(e.target.value)}
                             />
                             <label className="text-gray-800 font-normal">Debit Balance</label>
                         </div >
@@ -351,8 +440,8 @@ function AccountHead() {
                                 className="bg-transparent text-sm mx-2 text-gray-800 outline-none
                              border rounded px-2 py-2"
                                 placeholder="balance..."
-                                value={facilityName}
-                                onChange={(e) => setFacilityName(e.target.value)}
+                                value={amountCheck}
+                                onChange={(e) => setAmountCheck(e.target.value)}
                             />
                             <label className="text-gray-800 font-normal">Active Amount</label>
                         </div>
@@ -385,8 +474,8 @@ function AccountHead() {
                         </tr>
                     </thead>
                     <tbody>
-                        {Array.isArray(data) ? (
-                            data.map((facility, index) => (
+                        {Array.isArray(accountTypes) ? (
+                            accountTypes.map((facility, index) => (
                                 <tr key={facility._id}>
                                     <td className="border px-4 py-2">{index + 1}</td>
                                     <td className="border px-4 py-2">{facility.MAIN_HEAD}</td>
