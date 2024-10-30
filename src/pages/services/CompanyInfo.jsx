@@ -1,5 +1,5 @@
 /* eslint-disable react/react-in-jsx-scope */
-import { useEffect, useState, useRef } from "react";
+import {  useState, useRef } from "react";
 import Tooltip from "@mui/material/Tooltip";
 import DriveFolderUploadOutlinedIcon from "@mui/icons-material/DriveFolderUploadOutlined";
 import axios from "axios";
@@ -123,10 +123,12 @@ const CompanyInfo = () => {
       if (response.ok) {
         const responseData = await response.json();
         setSuccessMessage(responseData.message || "Company created successfully!");
+        alert(successMessage)
       } else {
         const errorData = await response.json();
         console.error('Error response from server:', errorData); // Log the error details
         setErrorMessage(errorData.message || "An error occurred");
+        alert(errorMessage)
       }
     } catch (error) {
       console.error('Error:', error);
@@ -325,11 +327,10 @@ const CompanyInfo = () => {
             className="mt-8 bg-[#3116ae] text-white font-bold py-2 px-4 rounded"
           >
             Create Company
+            
+          
           </button>
-
-          {/* Success/Error Message */}
-          {errorMessage && <div className="mt-4 text-red-600">{errorMessage}</div>}
-          {successMessage && <div className="mt-4 text-green-600">{successMessage}</div>}
+               {/* Success/Error Message */}
         </form>
       </div>
     </div>
