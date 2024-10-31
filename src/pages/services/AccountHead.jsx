@@ -242,6 +242,7 @@ function AccountHead() {
             setDescription("");
         } catch (error) {
             console.error("Error saving head:", error);
+            alert("Error saving head");
         }
     };
 

@@ -1,5 +1,5 @@
 /* eslint-disable react/react-in-jsx-scope */
-import {  useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import Tooltip from "@mui/material/Tooltip";
 import DriveFolderUploadOutlinedIcon from "@mui/icons-material/DriveFolderUploadOutlined";
 import axios from "axios";
@@ -14,10 +14,32 @@ const CompanyInfo = () => {
   const [email, setEmail] = useState('');
   const [contactPerson, setContactPerson] = useState('');
   const [ntn, setNtn] = useState('');
+  const [city, setCity] = useState("");
+  const [destination, setDestination] = useState ('');
   const [gst, setGst] = useState('');
-  const [logo, setLogo] = useState(null); // Optional field for logo
+  const [logo, setLogo] = useState(null); 
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+
+  
+    // Fetch companies and generate company code
+    useEffect(() => {
+        const fetchCompanies = async () => {
+            try {
+                const response = await axios.get('/companies'); // Adjust the URL as needed
+                const companies = response.data;
+
+                // Generate companyCode based on the number of companies
+                const newCodeNumber = companies.length + 1; // Assuming you're starting from 1
+                const formattedCode = String(newCodeNumber).padStart(2, '0'); // Format to "01", "02", etc.
+                setCompanyCode(formattedCode);
+            } catch (error) {
+                console.error('Error fetching companies:', error);
+            }
+        };
+
+        fetchCompanies();
+    }, []);
 
   const fileInputRef = useRef(null);
   
@@ -48,6 +70,12 @@ const CompanyInfo = () => {
         case 'email':
           setEmail(value);
           break;
+        case 'city':
+            setCity(value);
+            break;
+        case 'destination':
+            setDestination(value);
+            break;
         case 'contactPerson':
           setContactPerson(value);
           break;
@@ -66,75 +94,86 @@ const CompanyInfo = () => {
   const handleFileClick = () => {
     fileInputRef.current.click();
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage("");
     setSuccessMessage("");
 
+    // Validate required fields
     if (!companyName || !gst) {
-      setErrorMessage("Company Name and GST are required fields.");
-      return;
-    }
-
-    const formDataToSend = new FormData();
-
-    // Handle file upload to Cloudinary
-    let logoUrl = null;
-    if (logo) {
-      const data = new FormData();
-      data.append("file", logo);
-      data.append("upload_preset", "upload");
-
-      try {
-        const uploadRes = await axios.post("https://api.cloudinary.com/v1_1/daexycwc7/image/upload", data);
-        logoUrl = uploadRes.data.url;
-      } catch (uploadError) {
-        console.error('File upload error:', uploadError.response ? uploadError.response.data : uploadError.message);
-        setErrorMessage("Error uploading logo.");
+        setErrorMessage("Company Name and GST are required fields.");
         return;
-      }
     }
 
+    // Prepare the form data to send
     const dataToSend = {
-      companyName,
-      gst,
-      logoUrl,
-      address,
-      telephone,
-      mobile,
-      contactPerson,
-      companyCode,
-      ntn,
-      fax,
-      email,
-  }; 
+        companyName,
+        gst,
+        address,
+        telephone,
+        mobile,
+        contactPerson,
+        companyCode,
+        ntn,
+        fax,
+        email,
+    };
 
-  console.log("Data to send to backend:", dataToSend);
+    // Handle file upload to Cloudinary if logo exists
+    if (logo) {
+        const formData = new FormData();
+        formData.append("file", logo);
+        formData.append("upload_preset", "upload");
 
-    // Log each field for debugging
-    for (const [key, value] of formDataToSend.entries()) {
-      console.log(`${key}: ${value}`);
+        try {
+            const uploadRes = await axios.post("https://api.cloudinary.com/v1_1/daexycwc7/image/upload", formData);
+            dataToSend.logoUrl = uploadRes.data.url; // Assign logo URL to the data to send
+        } catch (uploadError) {
+            console.error('File upload error:', uploadError.response ? uploadError.response.data : uploadError.message);
+            setErrorMessage("Error uploading logo.");
+            return; // Exit if logo upload fails
+        }
     }
+
+    console.log("Data to send to backend:", dataToSend); // Log the data for debugging
 
     try {
-      const response = await fetch("http://localhost:8000/api/companies", dataToSend);
+        const response = await fetch("/companies", {
+            method: "POST", // Specify the HTTP method
+            headers: {
+                "Content-Type": "application/json", // Set content type to JSON
+            },
+            body: JSON.stringify(dataToSend), // Convert data to JSON string
+        });
 
-      if (response.ok) {
-        const responseData = await response.json();
-        setSuccessMessage(responseData.message || "Company created successfully!");
-        alert(successMessage)
-      } else {
-        const errorData = await response.json();
-        console.error('Error response from server:', errorData); // Log the error details
-        setErrorMessage(errorData.message || "An error occurred");
-        alert(errorMessage)
-      }
+        if (response.ok) {
+            const responseData = await response.json();
+            setSuccessMessage(responseData.message || "Company created successfully!");
+            alert("Company created successfully!");
+            setAddress("");
+            setCity("")
+            setCompanyCode("");
+            setContactPerson("")
+            setCompanyName("");
+            setDestination("");
+            setFax("");
+            setGst("");
+            setMobile("");
+            setTelephone("")
+            setNtn("");
+            setEmail("");
+        } else {
+            const errorData = await response.json();
+            console.error('Error response from server:', errorData); // Log the error details
+            setErrorMessage(errorData.message || "An error occurred");
+            alert("Company Not created: " + (errorData.message || "Unknown error"));
+        }
     } catch (error) {
-      console.error('Error:', error);
-      setErrorMessage("An error occurred");
+        console.error('Error:', error);
+        setErrorMessage("An error occurred");
     }
-  };
+};
+
 
   return (
     <div>
@@ -160,20 +199,19 @@ const CompanyInfo = () => {
                 />
               </div>
             </Tooltip>
-            <Tooltip title={errorMessage || "Code is required"} open={!!errorMessage}>
+
               <div className="ml-8">
-                <label className="text-gray-800 text-lg mb-2 block">Code *</label>
+                <label className="text-gray-800 text-lg mb-2 block">Code </label>
                 <input
-                  type="text"
+                
                   name="companyCode"
                   className="w-[16rem] text-gray-800 bg-transparent text-sm border-b border-gray-300 focus:border-blue px-2 py-2 outline-none"
-                  placeholder="Enter code"
+                 readOnly
                   value={companyCode}
                   onChange={handleInputChange}
                   required
                 />
               </div>
-            </Tooltip>
           </div>
 
           {/* Logo */}
@@ -191,22 +229,38 @@ const CompanyInfo = () => {
             />
           </div>
 
-          {/* Address */}
-          <Tooltip title={errorMessage || "Address is required"} open={!!errorMessage}>
-            <div className="mt-4">
-              <label className="text-gray-800 text-lg mb-2 block">Address *</label>
-              <input
-                type="text"
-                name="address"
-                className="w-[42rem] bg-transparent text-gray-800 text-sm border-b border-gray-300 focus:border-blue px-2 py-2 outline-none"
-                placeholder="Enter Address"
-                value={address}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-          </Tooltip>
+          {/* Address and City */}
+          <div className="mr-20 mt-6 grid sm:grid-cols-2 gap-6">
+            <Tooltip title={errorMessage || "Address is required"} open={!!errorMessage}>
+              <div>
+                <label className="text-gray-800 text-lg mb-2 block">Address *</label>
+                <input
+                  type="text"
+                  name="address"
+                  className="w-[24rem] bg-transparent text-gray-800 text-sm border-b border-gray-300 focus:border-blue px-2 py-2 outline-none"
+                  placeholder="Enter Address"
+                  value={address}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+            </Tooltip>
 
+            <Tooltip title={errorMessage || "City is required"} open={!!errorMessage}>
+              <div>
+                <label className="text-gray-800 text-lg mb-2 block">City *</label>
+                <input
+                  type="text"
+                  name="city"
+                  className="w-[24rem] bg-transparent text-gray-800 text-sm border-b border-gray-300 focus:border-blue px-2 py-2 outline-none"
+                  placeholder="Enter City"
+                  value={city}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+            </Tooltip>
+          </div>
           {/* Telephone and Mobile */}
           <div className="mr-20 mt-6 grid sm:grid-cols-2 gap-6">
             <Tooltip title={errorMessage || "Telephone is required"} open={!!errorMessage}>
@@ -244,7 +298,7 @@ const CompanyInfo = () => {
           <div className="mr-20 mt-6 grid sm:grid-cols-2 gap-6">
             <Tooltip title={errorMessage || "Fax is required"} open={!!errorMessage}>
               <div>
-                <label className="text-gray-800 text-lg mb-2 block">Fax *</label>
+                <label className="text-gray-800 text-lg mb-2 block">Fax </label>
                 <input
                   type="tel"
                   name="fax"
@@ -252,7 +306,7 @@ const CompanyInfo = () => {
                   placeholder="Enter fax"
                   value={fax}
                   onChange={handleInputChange}
-                  required
+                  
                 />
               </div>
             </Tooltip>
@@ -284,6 +338,21 @@ const CompanyInfo = () => {
                   className="w-[24rem] bg-transparent text-gray-800 text-sm border-b border-gray-300 focus:border-blue px-2 py-2 outline-none"
                   placeholder="Enter contact person"
                   value={contactPerson}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+            </Tooltip>
+
+            <Tooltip title={errorMessage || "Destination is required"} open={!!errorMessage}>
+              <div>
+                <label className="text-gray-800 text-lg mb-2 block">Destination *</label>
+                <input
+                  type="text"
+                  name="destination"
+                  className="w-[24rem] bg-transparent text-gray-800 text-sm border-b border-gray-300 focus:border-blue px-2 py-2 outline-none"
+                  placeholder="Enter Destination"
+                  value={destination}
                   onChange={handleInputChange}
                   required
                 />
