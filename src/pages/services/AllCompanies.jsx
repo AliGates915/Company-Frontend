@@ -12,7 +12,7 @@ function AllCompanies() {
     },[])
     const fetchAllCompanies = async () => {
         try {
-            const response = await axios.get("/companies"); // Adjusted to match the router setup
+            const response = await axios.get("https://company-backend-delta.vercel.app/companies"); // Adjusted to match the router setup
             setAllCompaniesTypes(Array.isArray(response.data) ? response.data : []);
         } catch (error) {
             console.error("Error fetching packages types:", error);
@@ -29,7 +29,7 @@ function AllCompanies() {
         if (!updatedHeadName) return;
 
         try {
-            const response = await axios.put(`/heads/${id}`, {
+            const response = await axios.put(`https://company-backend-delta.vercel.app/heads/${id}`, {
                 head: updatedHeadName,
             });
             setAllCompaniesTypes(
@@ -52,7 +52,7 @@ function AllCompanies() {
             return;
 
         try {
-            await axios.delete(`/heads/${id}`); // Adjust the endpoint as necessary
+            await axios.delete(`https://company-backend-delta.vercel.app/heads/${id}`); // Adjust the endpoint as necessary
             setAllCompaniesTypes(allCompanyTypes.filter((head) => head._id !== id));
         } catch (error) {
             if (error.response && error.response.status === 401) {

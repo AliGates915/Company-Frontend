@@ -71,7 +71,7 @@ function AccountHead() {
         if (!updatedHeadName) return;
 
         try {
-            const response = await axios.put(`/accountHead/${id}`, {
+            const response = await axios.put(`https://company-backend-delta.vercel.app/accountHead/${id}`, {
                 head: updatedHeadName,
             });
             setHeadTypes(
@@ -94,7 +94,7 @@ function AccountHead() {
             return;
 
         try {
-            await axios.delete(`/accountHead/${id}`); // Adjust the endpoint as necessary
+            await axios.delete(`https://company-backend-delta.vercel.app/accountHead/${id}`); // Adjust the endpoint as necessary
             setHeadTypes(headTypes.filter((head) => head._id !== id));
         } catch (error) {
             if (error.response && error.response.status === 401) {
@@ -128,7 +128,7 @@ function AccountHead() {
     // Fetch company types
     const fetchCompanyTypes = async () => {
         try {
-            const response = await axios.get("/subHead"); // Adjust the endpoint if needed
+            const response = await axios.get("https://company-backend-delta.vercel.app/subHead"); // Adjust the endpoint if needed
             setCompanyTypes(response.data);
             setHeadTypes(response.data);
             setSubHeadTypes(response.data);
@@ -138,25 +138,10 @@ function AccountHead() {
         }
     };
 
-    // const fetchHead = async () => {
-    //     try {
-    //         const response = await axios.get("/subHead"); // Adjusted to match the router setup
-    //         setHeadTypes(Array.isArray(response.data) ? response.data : []);
-    //         setSubHeadTypes(Array.isArray(response.data) ? response.data : []);
-    //         console.log("Data", response.data);
-    //     } catch (error) {
-    //         console.error("Error fetching packages types:", error);
-    //         if (error.response) {
-    //             console.error("Response data:", error.response.data);
-    //             console.error("Response status:", error.response.status);
-    //         }
-    //     }
-    // };
-
     // Fetch heads based on selected company code
     const fetchHeadForCompany = async (companyCode) => {
         try {
-            const response = await axios.get(`/heads?companyCode=${companyCode}`);
+            const response = await axios.get(`https://company-backend-delta.vercel.app/heads?companyCode=${companyCode}`);
             setHeadTypes(response.data);  // Set filtered heads based on companyCode
             console.log("Filtered Head Data", response.data);  // Verify correct data is fetched
         } catch (error) {
@@ -227,7 +212,7 @@ function AccountHead() {
 
     const fetchAccountHead = async () => {
         try {
-            const response = await axios.get("/accountHead");
+            const response = await axios.get("https://company-backend-delta.vercel.app/accountHead");
             setAccountTypes(response.data);  // Set filtered heads based on companyCode
             console.log("Filtered Sub Head Data", response.data);  // Verify correct data is fetched
         } catch (error) {
@@ -264,7 +249,7 @@ function AccountHead() {
 
 
         try {
-            const response = await axios.post("/accountHead", dataToSend); // Adjust the endpoint as necessary
+            const response = await axios.post("https://company-backend-delta.vercel.app/accountHead", dataToSend); // Adjust the endpoint as necessary
             console.log("Saved head response:", response.data);
             if (response.data.status === "200" || response.data.status === "201") {   
                 alert(response.data.message)

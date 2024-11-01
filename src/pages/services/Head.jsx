@@ -77,7 +77,7 @@ function Head() {
 
     const fetchHead = async () => {
         try {
-            const response = await axios.get("/heads"); // Adjusted to match the router setup
+            const response = await axios.get("https://company-backend-delta.vercel.app/heads"); // Adjusted to match the router setup
             setHeadTypes(Array.isArray(response.data) ? response.data : []);
         } catch (error) {
             console.error("Error fetching packages types:", error);
@@ -109,7 +109,7 @@ function Head() {
         console.log("Data to send to backend:", dataToSend);
 
         try {
-            const response = await axios.post("/heads", dataToSend); // Adjust the endpoint as necessary
+            const response = await axios.post("https://company-backend-delta.vercel.app/heads", dataToSend); // Adjust the endpoint as necessary
             console.log("Saved head response:", response.data);
             if (response.data.status === "200" ) {
                 alert("Data is successfully saved.")
@@ -129,7 +129,7 @@ function Head() {
         if (!updatedHeadName) return;
 
         try {
-            const response = await axios.put(`/heads/${id}`, {
+            const response = await axios.put(`https://company-backend-delta.vercel.app/heads/${id}`, {
                 head: updatedHeadName,
             });
             setHeadTypes(
@@ -152,7 +152,7 @@ function Head() {
             return;
 
         try {
-            await axios.delete(`/heads/${id}`); // Adjust the endpoint as necessary
+            await axios.delete(`https://company-backend-delta.vercel.app/heads/${id}`); // Adjust the endpoint as necessary
             setHeadTypes(headTypes.filter((head) => head._id !== id));
         } catch (error) {
             if (error.response && error.response.status === 401) {
