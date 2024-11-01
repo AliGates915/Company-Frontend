@@ -9,7 +9,7 @@ import { DarkModeContext } from "./context/darkModeContext";
 
 import Layout from "../src/layout/Layout";
 
-
+import AllCompanies from "./pages/services/AllCompanies";
 import ComapnyInfo from "./pages/services/CompanyInfo";
 import Head from "./pages/services/Head";
 import SubHead from "./pages/services/SubHead";
@@ -46,6 +46,16 @@ function App() {
                 
                   <Layout>
                     <ComapnyInfo />
+                  </Layout>
+                
+              }
+            />
+            <Route
+              path="all"
+              element={
+                
+                  <Layout>
+                    <AllCompanies />
                   </Layout>
                 
               }

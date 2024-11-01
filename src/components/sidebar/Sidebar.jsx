@@ -51,12 +51,19 @@ const Sidebar = () => {
           </Link>
           
           <p className="title">SERVICE</p>
+          <Link to="/all" style={{ textDecoration: "none" }}>
+          <li>
+            <InsertChartIcon className="icon" />
+            <span>All Companies</span>
+          </li>
+          </Link>
           <Link to="/info" style={{ textDecoration: "none" }}>
           <li>
             <InsertChartIcon className="icon" />
             <span>Company Info</span>
           </li>
           </Link>
+          
           <Link to="/head" style={{ textDecoration: "none" }}>
           <li>
             <InsertChartIcon className="icon" />

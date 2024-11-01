@@ -6,13 +6,16 @@ import axios from "axios";
 function Head() {
     const [head, setHead] = useState("");
     const [headCode, setHeadCode] = useState("");
-    const [companyCode, setCompanyCode] = useState(""); 
+    const [companyCode, setCompanyCode] = useState("");
     const [headTypes, setHeadTypes] = useState([]);
     const [companyTypes, setCompanyTypes] = useState([]); // Fixed state declaration
     const [isCompanyTypeDropdownOpen, setIsCompanyTypeDropdownOpen] = useState(false);
     const [selectedCompanyType, setSelectedCompanyType] = useState("");
     const [description, setDescription] = useState('');
     const [sequenceNumber, setSequenceNumber] = useState(1);
+    const [openHead,  setOpenHead] = useState(false);
+
+    
 
     const dropdownRef = useRef(null); // Ref for the dropdown
 
@@ -30,13 +33,13 @@ function Head() {
 
         if (selectedCompany) {
             setSelectedCompanyType(companyName);
-            setCompanyCode(selectedCompany.code); // Set the company code
-            setHeadCode(`${selectedCompany.code}${String(sequenceNumber).padStart(2, '0')}`); // Generate initial head code
+            setCompanyCode(selectedCompany.companyCode); // Set the company code
+            setHeadCode(`${selectedCompany.companyCode}${String(sequenceNumber).padStart(2, '0')}`); // Generate initial head code
         }
 
         setIsCompanyTypeDropdownOpen(false);
     };
-    
+
     const handleHeadChange = (e) => {
         setHead(e.target.value);
 
@@ -47,7 +50,7 @@ function Head() {
 
     useEffect(() => {
         fetchCompanyTypes();
-         fetchHead();
+        fetchHead();
 
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -73,24 +76,24 @@ function Head() {
     };
 
     const fetchHead = async () => {
-    try {
-        const response = await axios.get("/heads"); // Adjusted to match the router setup
-        setHeadTypes(Array.isArray(response.data) ? response.data : []);
-    } catch (error) {
-        console.error("Error fetching packages types:", error);
-        if (error.response) {
-            console.error("Response data:", error.response.data);
-            console.error("Response status:", error.response.status);
+        try {
+            const response = await axios.get("/heads"); // Adjusted to match the router setup
+            setHeadTypes(Array.isArray(response.data) ? response.data : []);
+        } catch (error) {
+            console.error("Error fetching packages types:", error);
+            if (error.response) {
+                console.error("Response data:", error.response.data);
+                console.error("Response status:", error.response.status);
+            }
         }
-    }
-};
+    };
 
 
-     // Placeholder for code
+    // Placeholder for code
 
     const handleSave = async () => {
         if (!selectedCompanyType || !head || !description) {
-            alert("Please enter both a facility name and company type.");
+            alert("Please Enter and Select fields");
             return;
         }
 
@@ -100,7 +103,7 @@ function Head() {
             headName: head,
             headCode,
             description,
-            
+
         };
 
         console.log("Data to send to backend:", dataToSend);
@@ -108,7 +111,7 @@ function Head() {
         try {
             const response = await axios.post("/heads", dataToSend); // Adjust the endpoint as necessary
             console.log("Saved head response:", response.data);
-            if(response.data.status === "201") {
+            if (response.data.status === "200" ) {
                 alert("Data is successfully saved.")
             }
             setHeadTypes([...headTypes, response.data]);
@@ -117,6 +120,7 @@ function Head() {
             setDescription("");
         } catch (error) {
             console.error("Error saving head:", error);
+            alert(error)
         }
     };
 
@@ -159,108 +163,125 @@ function Head() {
 
     return (
         <>
-            <div className="flex justify-center mb-4 py-3 bg-[#3116ae]">
-                <h4 className="text-white text-2xl font-extrabold">MAIN HEADS</h4>
-            </div>
-            <div className="bg-white mx-auto w-[40rem] border mt-4 p-4 shadow-md rounded-md">
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                    {/* company */}
-                    <div>
-                        <label className="text-gray-800 font-semibold">Company</label>
-                        <div ref={dropdownRef} className="relative">
-                            <div
-                                className="flex items-center justify-between w-[22rem] border rounded px-2 py-2 cursor-pointer"
-                                onClick={toggleCompanyTypeDropdown}
-                            >
+            <nav className='flex justify-between my-4 mx-8 '>
+                <div className='text-3xl font-extrabold text-[#7339ff] tracking-wide '>
+                    MAIN HEADS
+                </div>
+
+                <button className='bg-[#5239c3]  px-4 py-2 rounded-sm 
+            hover:rounded-lg text-md  text-white tracking-wide'
+            onClick={() => setOpenHead(true)}
+            >
+                    Add new Head
+                </button>
+            </nav>
+            <hr className='bg-gray-400 mb-4' />
+
+            {openHead && (
+                <div className="bg-white mx-auto w-[40rem] border mt-4 p-4 shadow-md rounded-md z-50 relative">
+                    <button onClick={() => setOpenHead(false)} className="absolute top-2 
+                    right-4 text-[#3116ae] text-xl hover:text-red font-extrabold">
+                        X
+                    </button>
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                        {/* Company */}
+                        <div>
+                            <label className="text-gray-800 font-semibold">Company</label>
+                            <div ref={dropdownRef} className="relative">
+                                <div
+                                    className="flex items-center justify-between w-[22rem] border rounded px-2 py-2 cursor-pointer"
+                                    onClick={toggleCompanyTypeDropdown}
+                                >
+                                    <input
+                                        type="text"
+                                        className="bg-transparent text-gray-800 text-sm outline-none cursor-pointer w-full"
+                                        value={selectedCompanyType || "Select Company Name"}
+                                        readOnly
+                                    />
+                                    <span className="ml-2 text-gray-800">▼</span>
+                                </div>
+                                {isCompanyTypeDropdownOpen && (
+                                    <div className="absolute mt-1 w-[22rem] bg-white shadow-xl rounded max-h-40 overflow-auto z-50">
+                                        <ul className="divide-y divide-gray-100">
+                                            {companyTypes.map((company, index) => (
+                                                <li
+                                                    className="px-4 py-2 text-gray-800 hover:bg-blue-100 cursor-pointer"
+                                                    key={index}
+                                                    onClick={() => handleCompanyTypeSelect(company.companyName)}
+                                                >
+                                                    {company.companyName}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        {/* Company Code */}
+                        <div>
+                            <label className="text-gray-800 ml-28 font-semibold">Code</label>
+                            <div className="relative">
                                 <input
                                     type="text"
-                                    className="bg-transparent text-gray-800 text-sm outline-none cursor-pointer w-full"
-                                    value={selectedCompanyType || "Select Company Name"}
+                                    value={companyCode}
+                                    className="bg-transparent text-sm ml-28 text-gray-800 outline-none w-[8rem] border rounded px-2 py-2"
                                     readOnly
                                 />
-                                <span className="ml-2 text-gray-800">▼</span>
                             </div>
-                            {isCompanyTypeDropdownOpen && (
-                                <div className="absolute mt-1 w-[22rem] bg-white shadow-xl rounded max-h-40 overflow-auto z-50">
-                                    <ul className="divide-y divide-gray-100">
-                                        {companyTypes.map((company, index) => (
-                                            <li
-                                                className="px-4 py-2 text-gray-800 hover:bg-blue-100 cursor-pointer"
-                                                key={index}
-                                                onClick={() => handleCompanyTypeSelect(company.companyName)}
-                                            >
-                                                {company.companyName}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )}
                         </div>
                     </div>
-                    {/* company code  */}
-                    <div>
-                        <label className="text-gray-800 ml-28 font-semibold">Code</label>
-                        <div className="relative">
+
+                    {/* Head */}
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label className="text-gray-800 font-semibold">Head</label>
                             <input
                                 type="text"
-                                value={companyCode} 
-                                className="bg-transparent text-sm ml-28 text-gray-800 outline-none w-[8rem] border rounded px-2 py-2"
-                                readOnly
+                                className="bg-transparent text-sm text-gray-800 outline-none w-[22rem] border rounded px-2 py-2"
+                                placeholder="Enter Head"
+                                value={head}
+                                onChange={handleHeadChange}
+                            />
+                        </div>
+                        {/* Head Code */}
+                        <div>
+                            <label className="text-gray-800 ml-28 font-semibold">Code</label>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    className="bg-transparent text-sm ml-28 text-gray-800 outline-none w-[8rem] border rounded px-2 py-2"
+                                    placeholder='Auto Generate'
+                                    value={headCode}
+                                    readOnly
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            <label className="text-gray-800 font-semibold">Description</label>
+                            <input
+                                type="text"
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                className="bg-transparent text-sm text-gray-800 outline-none w-[34.5rem] border rounded px-2 py-2"
+                                placeholder="Enter Description"
                             />
                         </div>
                     </div>
-                </div>
-                
-                {/* Head */}
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label className="text-gray-800 font-semibold">Head</label>
-                        <input
-                            type="text"
-                            className="bg-transparent text-sm text-gray-800 outline-none w-[22rem] border rounded px-2 py-2"
-                            placeholder="Enter Head"
-                            value={head}
-                            onChange={handleHeadChange}
-                        />
-                    </div>
-                    {/* Head code */}
-                    <div>
-                        <label className="text-gray-800 ml-28 font-semibold">Code</label>
-                        <div className="relative">
-                            <input
-                                type="text"
-                                className="bg-transparent text-sm ml-28 text-gray-800 outline-none w-[8rem] border rounded px-2 py-2"
-                                placeholder='Auto Generate'
-                                value={headCode}
-                                readOnly
-                            />
-                        </div>
-                    </div>
-                    <div>
-                        <label className="text-gray-800 font-semibold">Description</label>
-                        <input
-                            type="text"
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            className="bg-transparent text-sm text-gray-800 outline-none w-[34.5rem] border rounded px-2 py-2"
-                            placeholder="Enter Description"
-                        />
-                    </div>
-                </div>
 
-                <div className="flex justify-center">
-                    <button
-                        className="bg-[#3116ae] text-white text-md font-bold w-40 py-2 mt-2 rounded-full hover:bg-blue-600"
-                        onClick={handleSave}
-                    >
-                        SAVE
-                    </button>
+                    <div className="flex justify-center">
+                        <button
+                            className="bg-[#3116ae] text-white text-md font-bold w-40 py-2 mt-2 rounded-full hover:bg-blue-600"
+                            onClick={handleSave}
+                        >
+                            Save
+                        </button>
+                    </div>
                 </div>
-            </div>
+            )}
 
-            <div className="mt-6 max-w-full mx-4">
-                <table className="min-w-full border-collapse border border-gray-300">
-                    <thead>
+            <div className=" max-w-full mx-4">
+                <table className="min-w-full border-collapse border border-gray-200">
+                    <thead className="bg-[#7339ff] text-gray-50">
                         <tr>
                             <th className="border px-4 py-2">SR.#</th>
                             <th className="border px-4 py-2">CODE</th>
@@ -274,9 +295,9 @@ function Head() {
                             headTypes.map((head, index) => (
                                 <tr key={head._id}>
                                     <td className="border px-4 py-2">{index + 1}</td>
-                                    <td className="border px-4 py-2">{head.headCode}</td> 
-                                    <td className="border px-4 py-2">{head.headName}</td> 
-                                    <td className="border px-4 py-2">{head.description || ""}</td> 
+                                    <td className="border px-4 py-2">{head.headCode}</td>
+                                    <td className="border px-4 py-2">{head.headName}</td>
+                                    <td className="border px-4 py-2">{head.description || ""}</td>
                                     <td className="border px-4 py-3 flex justify-center space-x-4">
                                         <FaEdit
                                             className="text-blue-600 cursor-pointer"

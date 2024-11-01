@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import Tooltip from "@mui/material/Tooltip";
 import DriveFolderUploadOutlinedIcon from "@mui/icons-material/DriveFolderUploadOutlined";
 import axios from "axios";
+import {Link} from  'react-router-dom'
 
 const CompanyInfo = () => {
   const [companyName, setCompanyName] = useState('');
@@ -19,7 +20,7 @@ const CompanyInfo = () => {
   const [gst, setGst] = useState('');
   const [logo, setLogo] = useState(null); 
   const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  const [, setSuccessMessage] = useState("");
 
   
     // Fetch companies and generate company code
@@ -177,10 +178,19 @@ const CompanyInfo = () => {
 
   return (
     <div>
-      <div className="w-90 h-screen bg-white font-[sans-serif] p-3">
-        <div className="flex justify-center mb-8 py-3 bg-[#3116ae]">
-          <h4 className="text-white text-2xl font-extrabold">COMPANY INFORMATION</h4>
-        </div>
+      <div className="w-90 h-screen font-[sans-serif] p-3">
+      <nav className='flex justify-between my-4 mx-6 '>
+            <div className='text-3xl font-extrabold text-[#7339ff] tracking-wide '>
+                Company Information
+            </div>
+            <Link to='/all'>
+            <button className='bg-[#5239c3]  px-4 py-2 rounded-sm 
+            hover:rounded-lg text-md  text-white tracking-wide'>
+                Back to All Company
+            </button>
+            </Link>
+        </nav>
+        <hr className='bg-gray-400 mb-4'/>
 
         <form onSubmit={handleSubmit} className="ml-20">
           {/* Company Name */}
