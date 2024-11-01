@@ -47,6 +47,7 @@ function SubHead() {
         return () => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
 
@@ -58,7 +59,7 @@ function SubHead() {
     // Fetch company types
     const fetchCompanyTypes = async () => {
         try {
-            const response = await axios.get("https://company-backend-delta.vercel.app/heads"); // Adjust the endpoint if needed
+            const response = await axios.get("https://company-backend-delta.vercel.app/api/heads"); // Adjust the endpoint if needed
             setCompanyTypes(response.data);
             console.log("Company Data", response.data);
         } catch (error) {
@@ -73,7 +74,7 @@ function SubHead() {
     // Fetch heads based on selected company code
     const fetchHeadForCompany = async (companyCode) => {
         try {
-            const response = await axios.get(`https://company-backend-delta.vercel.app/heads?companyCode=${companyCode}`);
+            const response = await axios.get(`https://company-backend-delta.vercel.app/api/heads?companyCode=${companyCode}`);
             setHeadTypes(response.data);  // Set filtered heads based on companyCode
             console.log("Filtered Head Data", response.data);  // Verify correct data is fetched
         } catch (error) {
@@ -120,7 +121,7 @@ function SubHead() {
 
     const fetchSubHead = async () => {
         try {
-            const response = await axios.get("https://company-backend-delta.vercel.app/subHead");
+            const response = await axios.get("https://company-backend-delta.vercel.app/api/subHead");
             setSubHeadTypes(response.data);  // Set filtered heads based on companyCode
             console.log("Filtered Sub Head Data", response.data);  // Verify correct data is fetched
         } catch (error) {
@@ -148,7 +149,7 @@ function SubHead() {
 
 
         try {
-            const response = await axios.post("https://company-backend-delta.vercel.app/subHead", dataToSend); // Adjust the endpoint as necessary
+            const response = await axios.post("https://company-backend-delta.vercel.app/api/subHead", dataToSend); // Adjust the endpoint as necessary
             console.log("Saved head response:", response.data);
             if (response.data.status === "201") {
                 setMessage("Data is successfully saved.");
@@ -178,7 +179,7 @@ function SubHead() {
         if (!updatedHeadName) return;
 
         try {
-            const response = await axios.put(`https://company-backend-delta.vercel.app/subHead/${id}`, {
+            const response = await axios.put(`https://company-backend-delta.vercel.app/api/subHead/${id}`, {
                 head: updatedHeadName,
             });
             setHeadTypes(
@@ -201,7 +202,7 @@ function SubHead() {
             return;
 
         try {
-            await axios.delete(`https://company-backend-delta.vercel.app/subHead/${id}`); // Adjust the endpoint as necessary
+            await axios.delete(`https://company-backend-delta.vercel.app/api/subHead/${id}`); // Adjust the endpoint as necessary
             setHeadTypes(headTypes.filter((head) => head._id !== id));
         } catch (error) {
             if (error.response && error.response.status === 401) {

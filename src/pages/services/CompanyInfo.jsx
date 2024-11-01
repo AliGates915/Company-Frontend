@@ -139,7 +139,7 @@ const CompanyInfo = () => {
     console.log("Data to send to backend:", dataToSend); // Log the data for debugging
 
     try {
-        const response = await fetch("https://company-backend-delta.vercel.app/companies", {
+        const response = await fetch("https://company-backend-delta.vercel.app/api/companies", {
             method: "POST", // Specify the HTTP method
             headers: {
                 "Content-Type": "application/json", // Set content type to JSON
