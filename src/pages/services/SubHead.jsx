@@ -18,7 +18,6 @@ function SubHead() {
     const [description, setDescription] = useState('');
     const [, setSelectedCompanyCode] = useState('');
     const [subHeadTypes, setSubHeadTypes] = useState([]);
-    const [sequenceNumber, setSequenceNumber] = useState(1);
     const [message, setMessage] = useState(null);  // Message state
     const [messageType, setMessageType] = useState("");
     const dropdownRef = useRef(null);
@@ -54,12 +53,43 @@ function SubHead() {
     useEffect(() => {
         fetchCompanyTypes();
         fetchSubHead()
+                
+        const fetchHeads = async () => {
+            try {
+                const response = await axios.get('heads'); // Adjust the URL as needed
+                const heads = response.data;
+
+                // Generate companyCode based on the number of companies
+                const newCodeNumber = heads.length; // Assuming you're starting from 1
+                const formattedCode = String(newCodeNumber).padStart(2, '0'); // Format to "01", "02", etc.
+                setHeadCode(formattedCode);
+            } catch (error) {
+                console.error('Error fetching head:', error);
+            }
+        };
+        const fetchSubHeads = async () => {
+            try {
+                const response = await axios.get('subHead'); // Adjust the URL as needed
+                const subHead = response.data;
+
+                // Generate companyCode based on the number of companies
+                const newCodeNumber = subHead.length + 1; // Assuming you're starting from 1
+                const formattedCode = String(newCodeNumber).padStart(2, '0'); // Format to "01", "02", etc.
+                setSubHeadCode(formattedCode);
+            } catch (error) {
+                console.error('Error fetching subHead:', error);
+            }
+        };
+        
+        fetchSubHeads();
+        fetchHeads();
+
     }, []);
 
     // Fetch company types
     const fetchCompanyTypes = async () => {
         try {
-            const response = await axios.get("https://company-backend-delta.vercel.app/api/heads"); // Adjust the endpoint if needed
+            const response = await axios.get("/heads"); // Adjust the endpoint if needed
             setCompanyTypes(response.data);
             console.log("Company Data", response.data);
         } catch (error) {
@@ -74,7 +104,7 @@ function SubHead() {
     // Fetch heads based on selected company code
     const fetchHeadForCompany = async (companyCode) => {
         try {
-            const response = await axios.get(`https://company-backend-delta.vercel.app/api/heads?companyCode=${companyCode}`);
+            const response = await axios.get(`/heads?companyCode=${companyCode}`);
             setHeadTypes(response.data);  // Set filtered heads based on companyCode
             console.log("Filtered Head Data", response.data);  // Verify correct data is fetched
         } catch (error) {
@@ -86,10 +116,6 @@ function SubHead() {
 
         if (selectedHead) {
             setSelectedHeadType(headName);
-            setHeadCode(selectedHead.headCode);
-
-            // Use backticks to correctly set subHeadCode with template literals
-            setSubHeadCode(`${selectedHead.headCode}${String(sequenceNumber).padStart(2, '0')}`);
         }
         setIsHeadTypeDropdownOpen(false);
     };
@@ -101,7 +127,6 @@ function SubHead() {
         const selectedCompany = companyTypes.find(company => company.companyName === companyName);
         const selectedCode = event.target.value;
         setSelectedCompanyCode(selectedCode);
-        fetchHeadForCompany(selectedCode);
 
         if (selectedCompany) {
             setSelectedCompanyType(companyName);
@@ -113,15 +138,11 @@ function SubHead() {
     // Handle subhead change and update code
     const handleSubHeadChange = (e) => {
         setSubHeadName(e.target.value);
-
-        const newSubHeadCode = `${headCode}${String(sequenceNumber).padStart(2, '0')}`;
-        setSubHeadCode(newSubHeadCode);
-        setSequenceNumber(prev => prev + 1);
     };
 
     const fetchSubHead = async () => {
         try {
-            const response = await axios.get("https://company-backend-delta.vercel.app/api/subHead");
+            const response = await axios.get("/subHead");
             setSubHeadTypes(response.data);  // Set filtered heads based on companyCode
             console.log("Filtered Sub Head Data", response.data);  // Verify correct data is fetched
         } catch (error) {
@@ -149,7 +170,7 @@ function SubHead() {
 
 
         try {
-            const response = await axios.post("https://company-backend-delta.vercel.app/api/subHead", dataToSend); // Adjust the endpoint as necessary
+            const response = await axios.post("/subHead", dataToSend); // Adjust the endpoint as necessary
             console.log("Saved head response:", response.data);
             if (response.data.status === "201") {
                 setMessage("Data is successfully saved.");
@@ -162,6 +183,7 @@ function SubHead() {
             setCompanyCode('')
             setSubHeadCode('')
             setHeadCode('');
+
             setDescription("");
         } catch (error) {
             console.error("Error saving head:", error);
@@ -179,7 +201,7 @@ function SubHead() {
         if (!updatedHeadName) return;
 
         try {
-            const response = await axios.put(`https://company-backend-delta.vercel.app/api/subHead/${id}`, {
+            const response = await axios.put(`/subHead/${id}`, {
                 head: updatedHeadName,
             });
             setHeadTypes(
@@ -202,7 +224,7 @@ function SubHead() {
             return;
 
         try {
-            await axios.delete(`https://company-backend-delta.vercel.app/api/subHead/${id}`); // Adjust the endpoint as necessary
+            await axios.delete(`/subHead/${id}`); // Adjust the endpoint as necessary
             setHeadTypes(headTypes.filter((head) => head._id !== id));
         } catch (error) {
             if (error.response && error.response.status === 401) {
@@ -216,15 +238,16 @@ function SubHead() {
     return (
         <>
             <nav className='flex justify-between my-4 mx-8 '>
-                <div className='text-3xl font-extrabold text-[#7339ff] tracking-wide '>
-                    ACCOUNT SUB HEADS
+                <div className='text-2xl font-extrabold text-[#7339ff] tracking-wide '>
+                ACCOUNT SUB HEADS
                 </div>
 
-                <button className='bg-[#5239c3]  px-4 py-2 rounded-sm 
-            hover:rounded-lg text-md  text-white tracking-wide'
+                <button className='bg-[#5239c3] font-extrabold px-3 py-1 rounded-full transition-all duration-300 
+                text-xl text-white tracking-wide flex items-center justify-center hover:bg-[#4a32b3] 
+               hover:scale-105 hover:shadow-lg hover:shadow-[#4a32b3]/80'
                     onClick={() => setOpenHead(true)}
                 >
-                    Add new Sub Head
+                    +
                 </button>
             </nav>
             <hr className='bg-gray-400 mb-4' />
@@ -361,7 +384,9 @@ function SubHead() {
                             </div>
                         )}
                         <button
-                            className="bg-[#3116ae] text-white text-md font-bold w-40 py-2 mt-2 rounded-full hover:bg-blue-600"
+                            className="bg-[#5239c3] hover:bg-[#4a32b3] 
+                            hover:scale-105 hover:shadow-lg hover:shadow-[#4a32b3]/80 text-white 
+                            text-md font-bold w-40 py-2 mt-2 rounded-full hover:bg-blue-600"
                             onClick={handleSave}
                         >
                             SAVE
@@ -373,10 +398,10 @@ function SubHead() {
                 <table className="min-w-full border-collapse border border-gray-300">
                     <thead className="bg-[#7339ff] text-gray-50">
                         <tr>
-                            <th className="border px-4 py-2">SR.#</th>
-                            <th className="border px-4 py-2">CATEGORY</th>
-                            <th className="border px-4 py-2">CODE</th>
-                            <th className="border px-4 py-2">HEAD</th>
+                            <th className="border px-1 py-2">SR.#</th>
+                            <th className="border px-1 py-2">CODE</th>
+                            <th className="border px-4 py-2">MAIN HEAD</th>
+                            <th className="border px-4 py-2">SUB HEAD</th>
                             <th className="border px-4 py-2">DESCRIPTION</th>
                             <th className="border px-4 py-2">ACTIONS</th>
                         </tr>
@@ -386,8 +411,8 @@ function SubHead() {
                             subHeadTypes.map((subHead, index) => (
                                 <tr key={subHead._id}>
                                     <td className="border px-4 py-2">{index + 1}</td>
-                                    <td className="border px-4 py-2">{subHead.headName}</td>
                                     <td className="border px-4 py-2">{subHead.subHeadCode}</td>
+                                    <td className="border px-4 py-2">{subHead.headName}</td>
                                     <td className="border px-4 py-2">{subHead.subHeadName}</td>
                                     <td className="border px-4 py-2">{subHead.description || ""}</td>
                                     <td className="border px-4 py-3 flex justify-center space-x-4">

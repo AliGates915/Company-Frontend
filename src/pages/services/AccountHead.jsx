@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/react-in-jsx-scope */
 import { useState, useEffect, useRef } from "react";
 import { FaEdit, FaTrashAlt } from "react-icons/fa";
@@ -6,6 +7,7 @@ import axios from "axios";
 function AccountHead() {
     const [accountName, setAccountName] = useState("");
     const [accountTypes, setAccountTypes] = useState([]);
+    const [fetchAccount, setFetchAccount] = useState([]);
 
     const [, setIsSubHeadTypeDropdownOpen] = useState(false);
 
@@ -30,8 +32,8 @@ function AccountHead() {
     const [selectedSubHeadType, setSelectedSubHeadType] = useState("");
     const [description, setDescription] = useState('');
     const [subHeadTypes, setSubHeadTypes] = useState([]);
-    const [sequenceNumber, setSequenceNumber] = useState(1);
     const dropdownRef = useRef(null);
+    const [, setSelectedCompanyCode] = useState('');
     const [openHead, setOpenHead] = useState(false);
 
 
@@ -64,7 +66,7 @@ function AccountHead() {
         if (!updatedHeadName) return;
 
         try {
-            const response = await axios.put(`https://company-backend-delta.vercel.app/api/accountHead/${id}`, {
+            const response = await axios.put(`/accountHead/${id}`, {
                 head: updatedHeadName,
             });
             setHeadTypes(
@@ -87,7 +89,7 @@ function AccountHead() {
             return;
 
         try {
-            await axios.delete(`https://company-backend-delta.vercel.app/api/accountHead/${id}`); // Adjust the endpoint as necessary
+            await axios.delete(`/accountHead/${id}`); // Adjust the endpoint as necessary
             setHeadTypes(headTypes.filter((head) => head._id !== id));
         } catch (error) {
             if (error.response && error.response.status === 401) {
@@ -115,16 +117,57 @@ function AccountHead() {
     useEffect(() => {
         fetchCompanyTypes();
         fetchAccountHead()
-        // fetchHead()
+        const fetchHeads = async () => {
+            try {
+                const response = await axios.get('heads'); // Adjust the URL as needed
+                const heads = response.data;
+
+                // Generate companyCode based on the number of companies
+                const newCodeNumber = heads.length; // Assuming you're starting from 1
+                const formattedCode = String(newCodeNumber).padStart(2, '0'); // Format to "01", "02", etc.
+                setHeadCode(formattedCode);
+            } catch (error) {
+                console.error('Error fetching head:', error);
+            }
+        };
+        const fetchSubHeads = async () => {
+            try {
+                const response = await axios.get('subHead'); // Adjust the URL as needed
+                const subHead = response.data;
+
+                // Generate companyCode based on the number of companies
+                const newCodeNumber = subHead.length ; // Assuming you're starting from 1
+                const formattedCode = String(newCodeNumber).padStart(2, '0'); // Format to "01", "02", etc.
+                setSubHeadCode(formattedCode);
+            } catch (error) {
+                console.error('Error fetching subHead:', error);
+            }
+        };
+        
+        const fetchAccount = async () => {
+            try {
+                const response = await axios.get('accountHead'); // Adjust the URL as needed
+                const account = response.data;
+
+                // Generate companyCode based on the number of companies
+                const newCodeNumber = account.length + 1; // Assuming you're starting from 1
+                const formattedCode = `${companyCode}-${headCode}-${String(newCodeNumber).padStart(3, '0')}`;
+                setAccountCode(formattedCode);
+            } catch (error) {
+                console.error('Error fetching subHead:', error);
+            }
+        };
+        
+        fetchSubHeads();
+        fetchHeads();
+        fetchAccount();
     }, []);
 
     // Fetch company types
     const fetchCompanyTypes = async () => {
         try {
-            const response = await axios.get("https://company-backend-delta.vercel.app/api/subHead"); // Adjust the endpoint if needed
+            const response = await axios.get("/subHead"); // Adjust the endpoint if needed
             setCompanyTypes(response.data);
-            setHeadTypes(response.data);
-            setSubHeadTypes(response.data);
             console.log("Company Data", response.data);
         } catch (error) {
             console.error("Error fetching company types:", error);
@@ -134,7 +177,7 @@ function AccountHead() {
     // Fetch heads based on selected company code
     const fetchHeadForCompany = async (companyCode) => {
         try {
-            const response = await axios.get(`https://company-backend-delta.vercel.app/api/heads?companyCode=${companyCode}`);
+            const response = await axios.get(`/heads?companyCode=${companyCode}`);
             setHeadTypes(response.data);  // Set filtered heads based on companyCode
             console.log("Filtered Head Data", response.data);  // Verify correct data is fetched
         } catch (error) {
@@ -142,25 +185,22 @@ function AccountHead() {
         }
     };
 
-    const handleHeadTypeSelect = (event) => {
-        const headName = event.target.value;
+    const handleHeadTypeSelect = async (headName) => {
         const selectedHead = headTypes.find(head => head.headName === headName);
 
         if (selectedHead) {
             setSelectedHeadType(headName);
-            setHeadCode(selectedHead.headCode);
-
-            // Use backticks to correctly set subHeadCode with template literals
-            setSubHeadCode(`${selectedHead.headCode}${String(sequenceNumber).padStart(2, '0')}`);
         }
         setIsHeadTypeDropdownOpen(false);
     };
 
 
     // Handle company selection
-    const handleCompanySelect = (event) => {
+    const handleCompanySelect = async (event) => {
         const companyName = event.target.value;
         const selectedCompany = companyTypes.find(company => company.companyName === companyName);
+        const selectedCode = event.target.value;
+        setSelectedCompanyCode(selectedCode);
 
         if (selectedCompany) {
             setSelectedCompanyType(companyName);
@@ -170,21 +210,10 @@ function AccountHead() {
     };
 
     // Handle subhead change and update code
-
-    const handleSubHeadTypeSelect = (event) => {
-        const subHeadName   = event.target.value;
-        const selectedSubHead = subHeadTypes.find(head => head.subHeadName === subHeadName);
-
-        if (selectedSubHead) {
-            setSelectedSubHeadType(subHeadName);
-            setSubHeadCode(selectedSubHead.subHeadCode);
-
-            // Use backticks to correctly set subHeadCode with template literals
-            setAccountCode(`${selectedSubHead.subHeadCode}${String(sequenceNumber).padStart(2, '0')}`);
-        }
-        setIsSubHeadTypeDropdownOpen(false);
+    const handleSubHeadChange = (e) => {
+        setSubHeadName(e.target.value);
     };
-
+    
     const filteredDestinations = selectedHeadType
         ? subHeadTypes.filter(destination => destination.headName === selectedHeadType)
         : [];
@@ -195,18 +224,13 @@ function AccountHead() {
     
     const handleAccountChange = (e) => {
         setAccountName(e.target.value);
-        // Generate the next subhead code based on current company and head codes
-        const newAccountCode = `${subHeadCode}${String(sequenceNumber).padStart(2, '0')}`;
-        setAccountCode(newAccountCode);
-        // Increment the sequence number for the next subhead entry
-        setSequenceNumber(prev => prev + 1);
-    };
+  };
 
 
     const fetchAccountHead = async () => {
         try {
-            const response = await axios.get("https://company-backend-delta.vercel.app/api/accountHead");
-            setAccountTypes(response.data);  // Set filtered heads based on companyCode
+            const response = await axios.get("/accountHead");
+            setFetchAccount(Array.isArray(response.data) ? response.data : []);  // Set filtered heads based on companyCode
             console.log("Filtered Sub Head Data", response.data);  // Verify correct data is fetched
         } catch (error) {
             console.error("Error fetching heads for company:", error);
@@ -242,7 +266,7 @@ function AccountHead() {
 
 
         try {
-            const response = await axios.post("https://company-backend-delta.vercel.app/api/accountHead", dataToSend); // Adjust the endpoint as necessary
+            const response = await axios.post("/accountHead", dataToSend); // Adjust the endpoint as necessary
             console.log("Saved head response:", response.data);
             if (response.data.status === "200" || response.data.status === "201") {   
                 alert(response.data.message)
@@ -272,15 +296,16 @@ function AccountHead() {
     return (
         <>
             <nav className='flex justify-between my-4 mx-8 '>
-                <div className='text-3xl font-extrabold text-[#7339ff] tracking-wide '>
-                    ACCOUNT HEADS
+            <div className='text-2xl font-extrabold text-[#7339ff] tracking-wide '>
+                ACCOUNT HEADS
                 </div>
 
-                <button className='bg-[#5239c3]  px-4 py-2 rounded-sm 
-            hover:rounded-lg text-md  text-white tracking-wide'
+                <button className='bg-[#5239c3] font-extrabold px-3 py-1 rounded-full transition-all duration-300 
+                text-xl text-white tracking-wide flex items-center justify-center hover:bg-[#4a32b3] 
+               hover:scale-105 hover:shadow-lg hover:shadow-[#4a32b3]/80'
                     onClick={() => setOpenHead(true)}
                 >
-                    Add new Account Head
+                    +
                 </button>
             </nav>
             <hr className='bg-gray-400 mb-4' />
@@ -357,7 +382,7 @@ function AccountHead() {
                             <label className="text-gray-800 font-semibold">Sub Head</label>
                             <select
                                 value={selectedSubHeadType}
-                                onChange={handleSubHeadTypeSelect}
+                                onChange={handleSubHeadChange}
                                 className=" bg-white w-[22rem] border text-gray-800 rounded outline-none px-2 py-2 cursor-pointer"
                             >
                                 <option value="" disabled>Select a Sub Head</option>
@@ -475,7 +500,9 @@ function AccountHead() {
 
                     <div className="flex justify-center">
                         <button
-                            className="bg-[#3116ae] text-white text-md font-bold w-40 py-2 mt-2 rounded-full hover:bg-blue-600"
+                            className="bg-[#5239c3] hover:bg-[#4a32b3] 
+                            hover:scale-105 hover:shadow-lg hover:shadow-[#4a32b3]/80 text-white 
+                            text-md font-bold w-40 py-2 mt-2 rounded-full hover:bg-blue-600"
                             onClick={handleSave}
                         >
                             SAVE
@@ -484,26 +511,26 @@ function AccountHead() {
                 </div>
             )}
             <div className="my-6 max-w-full mx-4">
-                <table className="min-w-full border-collapse border border-gray-300">
-                    <thead className="bg-[#7339ff] text-gray-50">
+                <table className="min-w-full  shadow-xl border-collapse border border-gray-300">
+                    <thead className="text-sm bg-[#7339ff] text-gray-50">
                         <tr>
-                            <th className="border px-4 py-2">SR.#</th>
+                            <th className="border px-1 py-2">SR.#</th>
+                            <th className="border px-1 py-2">CODE</th>
                             <th className="border px-4 py-2">MAIN HEAD</th>
                             <th className="border px-4 py-2">SUB HEAD</th>
-                            <th className="border px-4 py-2">CODE</th>
                             <th className="border px-4 py-2">TITLE</th>
                             <th className="border px-4 py-2">OPENING</th>
                             <th className="border px-4 py-2">ACTIONS</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {Array.isArray(accountTypes) && setAccountTypes.length > 0 ? (
-                            accountTypes.map((facility, index) => (
+                    <tbody className="text-sm">
+                        {Array.isArray(fetchAccount) && fetchAccount.length > 0 ? (
+                            fetchAccount.map((facility, index) => (
                                 <tr key={facility._id}>
                                     <td className="border px-4 py-2">{index + 1}</td>
+                                    <td className="border px-4 py-2">{facility.accountCode}</td>
                                     <td className="border px-4 py-2">{facility.headName}</td>
                                     <td className="border px-4 py-2">{facility.subHeadName}</td>
-                                    <td className="border px-4 py-2">{facility.accountCode}</td>
                                     <td className="border px-4 py-2">{facility.accountName}</td>
                                     <td className="border px-4 py-2">{facility.balance || 0}</td>
                                     <td className="border px-4 py-3 flex justify-center space-x-4">
@@ -521,10 +548,10 @@ function AccountHead() {
                             ))
                         ) : (
                             <tr>
-                                <td colSpan="4" className="border px-4 py-2 text-center">
-                                    No data found.
-                                </td>
-                            </tr>
+                            <td colSpan="8" className="border px-4 font-semibold py-2 text-center">
+                                No data found.
+                            </td>
+                        </tr>
                         )}
                     </tbody>
                 </table>

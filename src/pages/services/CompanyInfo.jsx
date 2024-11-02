@@ -139,7 +139,7 @@ const CompanyInfo = () => {
     console.log("Data to send to backend:", dataToSend); // Log the data for debugging
 
     try {
-        const response = await fetch("https://company-backend-delta.vercel.app/api/companies", {
+        const response = await fetch("/companies", {
             method: "POST", // Specify the HTTP method
             headers: {
                 "Content-Type": "application/json", // Set content type to JSON
@@ -180,13 +180,14 @@ const CompanyInfo = () => {
     <div>
       <div className="w-90 h-screen font-[sans-serif] p-3">
       <nav className='flex justify-between my-4 mx-6 '>
-            <div className='text-3xl font-extrabold text-[#7339ff] tracking-wide '>
+            <div className='text-2xl font-extrabold text-[#7339ff] tracking-wide '>
                 Company Information
             </div>
             <Link to='/all'>
-            <button className='bg-[#5239c3]  px-4 py-2 rounded-sm 
-            hover:rounded-lg text-md  text-white tracking-wide'>
-                Back to All Company
+            <button className='bg-[#5239c3] font-extrabold px-2 py-1 rounded-full transition-all duration-300 
+            text-xl text-white tracking-wide flex items-center justify-center hover:bg-[#4a32b3] 
+               hover:scale-105 hover:shadow-lg hover:shadow-[#4a32b3]/80'>
+                ➡
             </button>
             </Link>
         </nav>

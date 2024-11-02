@@ -16,6 +16,7 @@ import SubHead from "./pages/services/SubHead";
 import AccountHead from "./pages/services/AccountHead";
 import ItemOpening from "./pages/services/ItemOpeningBal";
 import JournalVoucher from "./pages/services/JournalVoucher";
+import { EditCompanyForm } from "./pages/services/EditCompanyForm";
 
 
 
@@ -43,61 +44,57 @@ function App() {
             <Route
               path="info"
               element={
-                
                   <Layout>
                     <ComapnyInfo />
                   </Layout>
-                
               }
             />
             <Route
               path="all"
               element={
-                
                   <Layout>
                     <AllCompanies />
                   </Layout>
-                
+              }
+            />
+            <Route
+              path="info/edit/:id"
+              element={
+                  <Layout>
+                    <EditCompanyForm />
+                  </Layout>
               }
             />
             <Route
               path="head"
               element={
-                
                   <Layout>
                     <Head />
                   </Layout>
-                
               }
             />
             <Route
               path="sub-head"
               element={
-                
                   <Layout>
                     <SubHead />
                   </Layout>
-              
               }
             />
              <Route
               path="account-head"
               element={
-               
                   <Layout>
                     <AccountHead />
                   </Layout>
-               
               }
             />
              <Route
               path="item-balance"
               element={
-                
                   <Layout>
                     <ItemOpening />
                   </Layout>
-                
               }
             />
              <Route

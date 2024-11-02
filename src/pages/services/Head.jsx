@@ -8,14 +8,14 @@ function Head() {
     const [headCode, setHeadCode] = useState("");
     const [companyCode, setCompanyCode] = useState("");
     const [headTypes, setHeadTypes] = useState([]);
+    const [fectchingHeadTypes, setfetchingHeadTypes] = useState([]);
     const [companyTypes, setCompanyTypes] = useState([]); // Fixed state declaration
     const [isCompanyTypeDropdownOpen, setIsCompanyTypeDropdownOpen] = useState(false);
     const [selectedCompanyType, setSelectedCompanyType] = useState("");
     const [description, setDescription] = useState('');
-    const [sequenceNumber, setSequenceNumber] = useState(1);
-    const [openHead,  setOpenHead] = useState(false);
+    const [openHead, setOpenHead] = useState(false);
 
-    
+
 
     const dropdownRef = useRef(null); // Ref for the dropdown
 
@@ -27,14 +27,29 @@ function Head() {
     const closeDropdowns = () => {
         setIsCompanyTypeDropdownOpen(false);
     };
-    // for company code 
+    useEffect(() => {
+        const fetchHeads = async () => {
+            try {
+                const response = await axios.get('heads'); // Adjust the URL as needed
+                const heads = response.data;
+
+                // Generate companyCode based on the number of companies
+                const newCodeNumber = heads.length + 1; // Assuming you're starting from 1
+                const formattedCode = String(newCodeNumber).padStart(2, '0'); // Format to "01", "02", etc.
+                setHeadCode(formattedCode);
+            } catch (error) {
+                console.error('Error fetching companies:', error);
+            }
+        };
+        fetchHeads();
+    }, []);
+
     const handleCompanyTypeSelect = (companyName) => {
         const selectedCompany = companyTypes.find(company => company.companyName === companyName);
 
         if (selectedCompany) {
             setSelectedCompanyType(companyName);
             setCompanyCode(selectedCompany.companyCode); // Set the company code
-            setHeadCode(`${selectedCompany.companyCode}${String(sequenceNumber).padStart(2, '0')}`); // Generate initial head code
         }
 
         setIsCompanyTypeDropdownOpen(false);
@@ -42,10 +57,6 @@ function Head() {
 
     const handleHeadChange = (e) => {
         setHead(e.target.value);
-
-        // Generate the next head code (increment the sequence number)
-        setSequenceNumber(prev => prev + 1);
-        setHeadCode(`${companyCode}${String(sequenceNumber).padStart(2, '0')}`);
     };
 
     useEffect(() => {
@@ -77,8 +88,8 @@ function Head() {
 
     const fetchHead = async () => {
         try {
-            const response = await axios.get("https://company-backend-delta.vercel.app/api/heads"); // Adjusted to match the router setup
-            setHeadTypes(Array.isArray(response.data) ? response.data : []);
+            const response = await axios.get("/heads"); // Adjusted to match the router setup
+            setfetchingHeadTypes(Array.isArray(response.data) ? response.data : []);
         } catch (error) {
             console.error("Error fetching packages types:", error);
             if (error.response) {
@@ -109,15 +120,15 @@ function Head() {
         console.log("Data to send to backend:", dataToSend);
 
         try {
-            const response = await axios.post("https://company-backend-delta.vercel.app/api/heads", dataToSend); // Adjust the endpoint as necessary
+            const response = await axios.post("/heads", dataToSend); // Adjust the endpoint as necessary
             console.log("Saved head response:", response.data);
-            if (response.data.status === "200" ) {
-                alert("Data is successfully saved.")
-            }
+            alert("Data is successfully saved.")
             setHeadTypes([...headTypes, response.data]);
             setSelectedCompanyType("");
             setHead("");
             setDescription("");
+            setCompanyCode("");
+            setHeadCode("");
         } catch (error) {
             console.error("Error saving head:", error);
             alert(error)
@@ -129,7 +140,7 @@ function Head() {
         if (!updatedHeadName) return;
 
         try {
-            const response = await axios.put(`https://company-backend-delta.vercel.app/api/heads/${id}`, {
+            const response = await axios.put(`/heads/${id}`, {
                 head: updatedHeadName,
             });
             setHeadTypes(
@@ -152,7 +163,7 @@ function Head() {
             return;
 
         try {
-            await axios.delete(`https://company-backend-delta.vercel.app/api/heads/${id}`); // Adjust the endpoint as necessary
+            await axios.delete(`/heads/${id}`); // Adjust the endpoint as necessary
             setHeadTypes(headTypes.filter((head) => head._id !== id));
         } catch (error) {
             if (error.response && error.response.status === 401) {
@@ -163,24 +174,26 @@ function Head() {
 
     return (
         <>
-            <nav className='flex justify-between my-4 mx-8 '>
-                <div className='text-3xl font-extrabold text-[#7339ff] tracking-wide '>
+            <nav className='flex justify-between my-4 mx-10'>
+                <div className='text-2xl font-extrabold text-[#7339ff] tracking-wide '>
                     MAIN HEADS
                 </div>
 
-                <button className='bg-[#5239c3]  px-4 py-2 rounded-sm 
-            hover:rounded-lg text-md  text-white tracking-wide'
-            onClick={() => setOpenHead(true)}
-            >
-                    Add new Head
+                <button className='bg-[#5239c3] font-extrabold px-3 py-1 rounded-full transition-all duration-300 
+                text-xl text-white tracking-wide flex items-center justify-center hover:bg-[#4a32b3] 
+               hover:scale-105 hover:shadow-lg hover:shadow-[#4a32b3]/80'
+                    onClick={() => setOpenHead(true)}
+                >
+                    +
                 </button>
+
             </nav>
             <hr className='bg-gray-400 mb-4' />
 
             {openHead && (
-                <div className="bg-white mx-auto w-[40rem] border mt-4 p-4 shadow-md rounded-md z-50 relative">
+                <div className="bg-white mx-auto w-[40rem] border my-4 p-4 shadow-xl rounded-md z-50 relative">
                     <button onClick={() => setOpenHead(false)} className="absolute top-2 
-                    right-4 text-[#3116ae] text-xl hover:text-red font-extrabold">
+                    right-4 text-[#4a32b3] text-xl hover:text-red font-extrabold">
                         X
                     </button>
                     <div className="grid grid-cols-2 gap-4 mb-4">
@@ -270,7 +283,9 @@ function Head() {
 
                     <div className="flex justify-center">
                         <button
-                            className="bg-[#3116ae] text-white text-md font-bold w-40 py-2 mt-2 rounded-full hover:bg-blue-600"
+                            className="bg-[#5239c3] hover:bg-[#4a32b3] 
+               hover:scale-105 hover:shadow-lg hover:shadow-[#4a32b3]/80 text-white 
+               text-md font-bold w-40 py-2 mt-2 rounded-full hover:bg-blue-600"
                             onClick={handleSave}
                         >
                             Save
@@ -279,23 +294,25 @@ function Head() {
                 </div>
             )}
 
-            <div className=" max-w-full mx-4">
-                <table className="min-w-full border-collapse border border-gray-200">
-                    <thead className="bg-[#7339ff] text-gray-50">
+            <div className=" max-w-full mx-10">
+                <table className="min-w-full shadow-xl border-collapse border border-gray-200">
+                    <thead className="text-sm bg-[#7339ff] text-gray-50">
                         <tr>
-                            <th className="border px-4 py-2">SR.#</th>
-                            <th className="border px-4 py-2">CODE</th>
-                            <th className="border px-4 py-2">HEAD</th>
-                            <th className="border px-4 py-2">DESCRIPTION</th>
-                            <th className="border px-4 py-2">ACTIONS</th>
+                            <th className="border px-1 py-1">SR.#</th>
+                            <th className="border px-1 py-1">CODE</th>
+                            <th className="border px-4 py-1">COMPANY</th>
+                            <th className="border px-5 py-2">HEAD</th>
+                            <th className="border px-6 py-2">DESCRIPTION</th>
+                            <th className="border px-2 py-2">ACTIONS</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {Array.isArray(headTypes) ? (
-                            headTypes.map((head, index) => (
+                    <tbody className="text-sm">
+                        {Array.isArray(fectchingHeadTypes) && fectchingHeadTypes.length > 0 ? (
+                            fectchingHeadTypes.map((head, index) => (
                                 <tr key={head._id}>
                                     <td className="border px-4 py-2">{index + 1}</td>
                                     <td className="border px-4 py-2">{head.headCode}</td>
+                                    <td className="border px-4 py-2">{head.companyName}</td>
                                     <td className="border px-4 py-2">{head.headName}</td>
                                     <td className="border px-4 py-2">{head.description || ""}</td>
                                     <td className="border px-4 py-3 flex justify-center space-x-4">
@@ -314,12 +331,13 @@ function Head() {
                             ))
                         ) : (
                             <tr>
-                                <td colSpan="5" className="border px-4 py-2 text-center">
+                                <td colSpan="5" className="border px-4 font-semibold py-2 text-center">
                                     No data found.
                                 </td>
                             </tr>
                         )}
                     </tbody>
+
                 </table>
             </div>
         </>
