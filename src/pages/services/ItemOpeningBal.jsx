@@ -5,8 +5,7 @@ import axios from "axios";
 
 function ItemOpening() {
     const [facilityName, setFacilityName] = useState("");
-    const [tourTypes, setTourTypes] = useState([]); // To handle tour types
-    const [openItem, setOpenItem] = useState([]); // To handle tour types
+   const [openItem, setOpenItem] = useState([]); // To handle tour types
     const [isTourTypeDropdownOpen, setIsTourTypeDropdownOpen] = useState(false);
     const [selectedTourType, setSelectedTourType] = useState("");
 
@@ -42,7 +41,7 @@ function ItemOpening() {
         
         const fetchAccount = async () => {
             try {
-                const response = await axios.get('/accountHead');
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/accountHead`);
                 setOpenItem(response.data);
             } catch (error) {
                 console.error('Error fetching account:', error);

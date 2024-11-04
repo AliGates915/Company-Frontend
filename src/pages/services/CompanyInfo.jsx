@@ -27,7 +27,7 @@ const CompanyInfo = () => {
     useEffect(() => {
         const fetchCompanies = async () => {
             try {
-                const response = await axios.get('https://company-backend-delta.vercel.app/companies'); // Adjust the URL as needed
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/companies`); // Adjust the URL as needed
                 const companies = response.data;
 
                 // Generate companyCode based on the number of companies
@@ -139,7 +139,7 @@ const CompanyInfo = () => {
     console.log("Data to send to backend:", dataToSend); // Log the data for debugging
 
     try {
-        const response = await fetch("/companies", {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/companies`, {
             method: "POST", // Specify the HTTP method
             headers: {
                 "Content-Type": "application/json", // Set content type to JSON

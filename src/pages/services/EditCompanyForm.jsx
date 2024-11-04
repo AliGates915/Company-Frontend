@@ -13,7 +13,7 @@ export const EditCompanyForm = () => {
     // Fetch the company data by ID
     const fetchCompany = async () => {
       try {
-        const response = await axios.get(`/companies/${_id}`);
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/companies/${_id}`);
         setFormData(response.data);
       } catch (error) {
         console.error("Error fetching company data:", error);
@@ -30,9 +30,9 @@ export const EditCompanyForm = () => {
 
   const editHandle = async () => {
     try {
-      const response = await axios.put(`/companies/${_id}`, formData);
+      const response = await axios.put(`${process.env.REACT_APP_API_URL}/companies/${_id}`, formData);
       if (response.status === 200) {
-        navigate("/all"); // Redirect after successful update
+        navigate(`${process.env.REACT_APP_API_URL}/all`); // Redirect after successful update
       }
     } catch (error) {
       console.error("Error updating company:", error);

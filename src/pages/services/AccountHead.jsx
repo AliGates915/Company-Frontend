@@ -69,7 +69,7 @@ function AccountHead() {
         if (!updatedHeadName) return;
 
         try {
-            const response = await axios.put(`/accountHead/${id}`, {
+            const response = await axios.put(`${process.env.REACT_APP_API_URL}/accountHead/${id}`, {
                 head: updatedHeadName,
             });
             setHeadTypes(
@@ -93,7 +93,7 @@ function AccountHead() {
             return;
 
         try {
-            await axios.delete(`/accountHead/${id}`); // Adjust the endpoint as necessary
+            await axios.delete(`${process.env.REACT_APP_API_URL}/accountHead/${id}`); // Adjust the endpoint as necessary
             setHeadTypes(headTypes.filter((head) => head._id !== id));
         } catch (error) {
             if (error.response && error.response.status === 401) {
@@ -105,7 +105,7 @@ function AccountHead() {
     useEffect(() => {
         const fetchCompanyTypes = async () => {
             try {
-                const { data } = await axios.get("/subHead");
+                const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/subHead`);
                 setCompanyTypes(data);
             } catch (error) {
                 console.error("Error fetching company types:", error);
@@ -114,7 +114,7 @@ function AccountHead() {
     
         const fetchHeads = async () => {
             try {
-                const { data } = await axios.get('/subHead');
+                const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/subHead`);
                 setHeadCode(data.length.toString().padStart(2, '0'));
             } catch (error) {
                 console.error('Error fetching head:', error);
@@ -123,7 +123,7 @@ function AccountHead() {
     
         const fetchSubHeads = async () => {
             try {
-                const { data } = await axios.get('/subHead');
+                const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/subHead`);
                 setSubHeadCode(data.length.toString().padStart(2, '0'));
             } catch (error) {
                 console.error('Error fetching subHead:', error);
@@ -132,7 +132,7 @@ function AccountHead() {
     
         const fetchAccount = async () => {
             try {
-                const { data } = await axios.get('/accountHead');
+                const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/accountHead`);
                 const newCodeNumber = data.length + 1;
                 setAccountCode(`${companyCode}-${headCode}-${newCodeNumber.toString().padStart(3, '0')}`);
             } catch (error) {
@@ -142,7 +142,7 @@ function AccountHead() {
     
         const fetchAccountHead = async () => {
             try {
-                const { data } = await axios.get('/accountHead');
+                const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/accountHead`);
                 setHeadData(data);
             } catch (error) {
                 console.error("Error fetching account head data:", error);
@@ -171,7 +171,7 @@ function AccountHead() {
     };
     const fetchHeadForCompany = async (companyCode) => {
         try {
-            const { data } = await axios.get(`/subHead?companyCode=${companyCode}`);
+            const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/subHead?companyCode=${companyCode}`);
             setHeadTypes(data);
         } catch (error) {
             console.error("Error fetching heads for company:", error);
@@ -179,7 +179,7 @@ function AccountHead() {
     };
     const fetchSubHeadForHead = async (headCode) => {
         try {
-            const { data } = await axios.get(`/subHead?headCode=${headCode}`);
+            const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/subHead?headCode=${headCode}`);
             setSubHeadTypes(data);
         } catch (error) {
             console.error("Error fetching sub heads for head:", error);
@@ -249,7 +249,7 @@ function AccountHead() {
 
 
         try {
-            const response = await axios.post("/accountHead", dataToSend); // Adjust the endpoint as necessary
+            const response = await axios.post(`${process.env.REACT_APP_API_URL}/accountHead`, dataToSend); // Adjust the endpoint as necessary
             console.log("Saved head response:", response.data);
             if (response.data.status === "200" || response.data.status === "201") {   
                 alert(response.data.message)

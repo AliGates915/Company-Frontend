@@ -4,17 +4,13 @@ import { FaEdit, FaTrashAlt } from "react-icons/fa";
 
 function JournalVoucher() {
     const [facilityName, setFacilityName] = useState("");
-    const [tourTypes, setTourTypes] = useState([]); // To handle tour types
     const [isTourTypeDropdownOpen, setIsTourTypeDropdownOpen] = useState(false);
     const [selectedTourType, setSelectedTourType] = useState("");
 
     const dropdownRef = useRef(null); // Ref for the dropdown
 
     // Toggle function for dropdown
-    const toggleTourTypeDropdown = () => {
-        setIsTourTypeDropdownOpen((prev) => !prev);
-    };
-
+   
     const closeDropdowns = () => {
         setIsTourTypeDropdownOpen(false);
     };

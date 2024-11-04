@@ -56,7 +56,7 @@ function SubHead() {
                 
         const fetchHeads = async () => {
             try {
-                const response = await axios.get('heads'); // Adjust the URL as needed
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/heads`); // Adjust the URL as needed
                 const heads = response.data;
 
                 // Generate companyCode based on the number of companies
@@ -69,7 +69,7 @@ function SubHead() {
         };
         const fetchSubHeads = async () => {
             try {
-                const response = await axios.get('subHead'); // Adjust the URL as needed
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/subHead`); // Adjust the URL as needed
                 const subHead = response.data;
 
                 // Generate companyCode based on the number of companies
@@ -89,7 +89,7 @@ function SubHead() {
     // Fetch company types
     const fetchCompanyTypes = async () => {
         try {
-            const response = await axios.get("/heads"); // Adjust the endpoint if needed
+            const response = await axios.get(`${process.env.REACT_APP_API_URL}/heads`); // Adjust the endpoint if needed
             setCompanyTypes(response.data);
             console.log("Company Data", response.data);
         } catch (error) {
@@ -104,7 +104,7 @@ function SubHead() {
     // Fetch heads based on selected company code
     const fetchHeadForCompany = async (companyCode) => {
         try {
-            const response = await axios.get(`/heads?companyCode=${companyCode}`);
+            const response = await axios.get(`${process.env.REACT_APP_API_URL}/heads?companyCode=${companyCode}`);
             setHeadTypes(response.data);  // Set filtered heads based on companyCode
             console.log("Filtered Head Data", response.data);  // Verify correct data is fetched
         } catch (error) {
@@ -143,7 +143,7 @@ function SubHead() {
 
     const fetchSubHead = async () => {
         try {
-            const response = await axios.get("/subHead");
+            const response = await axios.get(`${process.env.REACT_APP_API_URL}/subHead`);
             setSubHeadTypes(response.data);  // Set filtered heads based on companyCode
             console.log("Filtered Sub Head Data", response.data);  // Verify correct data is fetched
         } catch (error) {
@@ -171,7 +171,7 @@ function SubHead() {
 
 
         try {
-            const response = await axios.post("/subHead", dataToSend); // Adjust the endpoint as necessary
+            const response = await axios.post(`${process.env.REACT_APP_API_URL}/subHead`, dataToSend); // Adjust the endpoint as necessary
             console.log("Saved head response:", response.data);
             if (response.data.status === "201") {
                 setMessage("Data is successfully saved.");
@@ -202,7 +202,7 @@ function SubHead() {
         if (!updatedHeadName) return;
 
         try {
-            const response = await axios.put(`/subHead/${id}`, {
+            const response = await axios.put(`${process.env.REACT_APP_API_URL}/subHead/${id}`, {
                 head: updatedHeadName,
             });
             setHeadTypes(
@@ -225,7 +225,7 @@ function SubHead() {
             return;
 
         try {
-            await axios.delete(`/subHead/${id}`); // Adjust the endpoint as necessary
+            await axios.delete(`${process.env.REACT_APP_API_URL}/subHead/${id}`); // Adjust the endpoint as necessary
             setHeadTypes(headTypes.filter((head) => head._id !== id));
         } catch (error) {
             if (error.response && error.response.status === 401) {

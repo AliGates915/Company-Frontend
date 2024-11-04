@@ -14,7 +14,7 @@ function AllCompanies() {
     },[])
     const fetchAllCompanies = async () => {
         try {
-            const response = await axios.get("/companies"); // Adjusted to match the router setup
+            const response = await axios.get(`${process.env.REACT_APP_API_URL}/companies`); // Adjusted to match the router setup
             setAllCompaniesTypes(Array.isArray(response.data) ? response.data : []);
             setDisplayCompanies(response.data);
         } catch (error) {
@@ -29,7 +29,7 @@ function AllCompanies() {
     
     const handleEdit = (companyId) => {
         // Navigate to the edit form or page with the company's ID in the route
-        navigate(`/info/edit/${companyId}`);
+        navigate(`${process.env.REACT_APP_API_URL}/info/edit/${companyId}`);
     };
 
     const handleDelete = async (id) => {
@@ -42,7 +42,7 @@ function AllCompanies() {
             return;
 
         try {
-            await axios.delete(`/companies/${id}`); // Adjust the endpoint as necessary
+            await axios.delete(`${process.env.REACT_APP_API_URL}/companies/${id}`); // Adjust the endpoint as necessary
             setAllCompaniesTypes(allCompanyTypes.filter((head) => head._id !== id));
         } catch (error) {
             if (error.response && error.response.status === 401) {

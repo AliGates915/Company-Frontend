@@ -119,7 +119,7 @@ const CustomizePackage = () => {
   //fetching Data
   const fetchUser = async () => {
     try {
-      const response = await axios.get("/users");
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/users`);
       setUser(response.data);
       console.log("Fetched Users:", response.data);
       // Extract unique country names
@@ -130,7 +130,7 @@ const CustomizePackage = () => {
   };
   const fetchDestinations = async () => {
     try {
-      const response = await axios.get("/destination");
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/destination`);
       if (response.data) {
         console.log("Fetched designations:", response.data);
         setDestinations(response.data);
@@ -147,7 +147,7 @@ const CustomizePackage = () => {
   console.log("filteredDestinations ", filteredDestinations )
   const fetchTourTypes = async () => {
     try {
-      const response = await axios.get("/tours");
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/tours`);
       if (response.data) {
         setTourTypes(response.data);
         console.log("Fetched tour types:", response.data);
@@ -160,7 +160,7 @@ const CustomizePackage = () => {
 
   const fetchFacilities = async () => {
     try {
-      const response = await axios.get("/facility");
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/facility`);
       setFacilities(response.data);
       console.log("Fetched facilities:", response.data);
     } catch (error) {
@@ -219,7 +219,7 @@ const CustomizePackage = () => {
     console.log("Submitting data:", postData); // Added logging
 
     try {
-      const response = await axios.post("/customizePackage", postData);
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/customizePackage`, postData);
       if (response.status === 200) {
         alert("Data submitted successfully!");
       }
