@@ -111,6 +111,7 @@ function SubHead() {
             console.error("Error fetching heads for company:", error);
         }
     };
+    
     const handleHeadTypeSelect = async (headName) => {
         const selectedHead = headTypes.find(head => head.headName === headName);
 

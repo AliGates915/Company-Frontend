@@ -1,10 +1,12 @@
 /* eslint-disable react/react-in-jsx-scope */
 import { useState, useEffect, useRef } from "react";
 import { FaEdit, FaTrashAlt } from "react-icons/fa";
+import axios from "axios";
 
 function ItemOpening() {
     const [facilityName, setFacilityName] = useState("");
     const [tourTypes, setTourTypes] = useState([]); // To handle tour types
+    const [openItem, setOpenItem] = useState([]); // To handle tour types
     const [isTourTypeDropdownOpen, setIsTourTypeDropdownOpen] = useState(false);
     const [selectedTourType, setSelectedTourType] = useState("");
 
@@ -34,6 +36,21 @@ function ItemOpening() {
         };
     }, []);
 
+
+
+    useEffect(() => {
+        
+        const fetchAccount = async () => {
+            try {
+                const response = await axios.get('/accountHead');
+                setOpenItem(response.data);
+            } catch (error) {
+                console.error('Error fetching account:', error);
+            }
+        };
+        fetchAccount()
+
+    }, []);
     const handleSave = async () => {
         if (!facilityName || !selectedTourType) {
             alert("Please enter both a facility name and tour type.");
@@ -56,26 +73,6 @@ function ItemOpening() {
             OPENING: 15000,
             balance:1200,
         },
-        {
-            SR: 2,
-            MAIN_HEAD: "Expenses",
-            SUB_HEAD: "Marketing",
-            CODE: "E201",
-            TITLE: "Social Media Ads",
-            OPENING: 3000,
-            balance:100,
-        },
-        {
-            SR: 3,
-            MAIN_HEAD: "Assets",
-            SUB_HEAD: "Inventory",
-            CODE: "A301",
-            TITLE: "Warehouse Supplies",
-            OPENING: 12000,
-            balance:1500,
-        },
-        
-
     ];
 
 
@@ -108,7 +105,7 @@ function ItemOpening() {
                         <label className="text-gray-800 font-semibold">Head</label>
                         <div ref={dropdownRef} className="relative">
                             <div
-                                className="flex items-center justify-between w-[14rem] border rounded px-2 py-1 cursor-pointer"
+                                className="flex items-center justify-between w-[16.5rem] border rounded px-2 py-1 cursor-pointer"
                                 onClick={toggleTourTypeDropdown}
                             >
                                 <input
@@ -122,13 +119,13 @@ function ItemOpening() {
                             {isTourTypeDropdownOpen && (
                                 <div className="absolute mt-1 w-full bg-white shadow-lg rounded max-h-40 overflow-auto z-50">
                                     <ul className="divide-y divide-gray-100">
-                                        {tourTypes.map((tour, index) => (
+                                        {openItem.map((head, index) => (
                                             <li
                                                 className="px-4 py-2 text-gray-800 hover:bg-blue-100 cursor-pointer"
                                                 key={index}
-                                                onClick={() => setSelectedTourType(tour.tourName)}
+                                                onClick={() => setSelectedTourType(head.headName)}
                                             >
-                                                {tour.tourName}
+                                                {head.headName}
                                             </li>
                                         ))}
                                     </ul>

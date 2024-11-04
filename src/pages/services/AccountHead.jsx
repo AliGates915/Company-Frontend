@@ -7,10 +7,7 @@ import axios from "axios";
 function AccountHead() {
     const [accountName, setAccountName] = useState("");
     const [accountTypes, setAccountTypes] = useState([]);
-    const [fetchAccount, setFetchAccount] = useState([]);
-
-    const [, setIsSubHeadTypeDropdownOpen] = useState(false);
-
+   
     const [date, setDate] = useState("");
     const [debitCheck, setDebitCheck] = useState("");
     const [amountCheck, setAmountCheck] = useState("");
@@ -27,16 +24,22 @@ function AccountHead() {
     const [companyTypes, setCompanyTypes] = useState([]);
     const [, setIsCompanyTypeDropdownOpen] = useState(false);
     const [selectedCompanyType, setSelectedCompanyType] = useState("");
-    const [, setIsHeadTypeDropdownOpen] = useState(false);
     const [selectedHeadType, setSelectedHeadType] = useState("");
     const [selectedSubHeadType, setSelectedSubHeadType] = useState("");
     const [description, setDescription] = useState('');
     const [subHeadTypes, setSubHeadTypes] = useState([]);
+    const [, setIsHeadTypeDropdownOpen] = useState(false);
+    const [isSubHeadTypeDropdownOpen, setIsSubHeadTypeDropdownOpen] = useState(false);
     const dropdownRef = useRef(null);
-    const [, setSelectedCompanyCode] = useState('');
+    const [headData, setHeadData] = useState([]);
     const [openHead, setOpenHead] = useState(false);
 
 
+
+
+    const toggleSubHeadTypeDropdown = () => {
+        setIsSubHeadTypeDropdownOpen(prev => !prev);
+    };
 
     const closeDropdowns = () => {
         setIsSubHeadTypeDropdownOpen(false);
@@ -46,7 +49,6 @@ function AccountHead() {
     };
 
     useEffect(() => {
-        // Event listener for outside click
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
                 closeDropdowns();
@@ -58,6 +60,7 @@ function AccountHead() {
         return () => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
+        
     }, []);
 
 
@@ -77,6 +80,7 @@ function AccountHead() {
         } catch (error) {
             console.error("Error updating Account:", error);
         }
+        
     };
 
     const handleDelete = async (id) => {
@@ -98,147 +102,125 @@ function AccountHead() {
         }
     };
 
-
-    // Fetch functions
     useEffect(() => {
-
-        const handleClickOutside = (event) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-                closeDropdowns();
+        const fetchCompanyTypes = async () => {
+            try {
+                const { data } = await axios.get("/subHead");
+                setCompanyTypes(data);
+            } catch (error) {
+                console.error("Error fetching company types:", error);
             }
         };
-        document.addEventListener("mousedown", handleClickOutside);
-
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, []);
-
-    useEffect(() => {
-        fetchCompanyTypes();
-        fetchAccountHead()
+    
         const fetchHeads = async () => {
             try {
-                const response = await axios.get('heads'); // Adjust the URL as needed
-                const heads = response.data;
-
-                // Generate companyCode based on the number of companies
-                const newCodeNumber = heads.length; // Assuming you're starting from 1
-                const formattedCode = String(newCodeNumber).padStart(2, '0'); // Format to "01", "02", etc.
-                setHeadCode(formattedCode);
+                const { data } = await axios.get('/subHead');
+                setHeadCode(data.length.toString().padStart(2, '0'));
             } catch (error) {
                 console.error('Error fetching head:', error);
             }
         };
+    
         const fetchSubHeads = async () => {
             try {
-                const response = await axios.get('subHead'); // Adjust the URL as needed
-                const subHead = response.data;
-
-                // Generate companyCode based on the number of companies
-                const newCodeNumber = subHead.length ; // Assuming you're starting from 1
-                const formattedCode = String(newCodeNumber).padStart(2, '0'); // Format to "01", "02", etc.
-                setSubHeadCode(formattedCode);
+                const { data } = await axios.get('/subHead');
+                setSubHeadCode(data.length.toString().padStart(2, '0'));
             } catch (error) {
                 console.error('Error fetching subHead:', error);
             }
         };
-        
+    
         const fetchAccount = async () => {
             try {
-                const response = await axios.get('accountHead'); // Adjust the URL as needed
-                const account = response.data;
-
-                // Generate companyCode based on the number of companies
-                const newCodeNumber = account.length + 1; // Assuming you're starting from 1
-                const formattedCode = `${companyCode}-${headCode}-${String(newCodeNumber).padStart(3, '0')}`;
-                setAccountCode(formattedCode);
+                const { data } = await axios.get('/accountHead');
+                const newCodeNumber = data.length + 1;
+                setAccountCode(`${companyCode}-${headCode}-${newCodeNumber.toString().padStart(3, '0')}`);
             } catch (error) {
-                console.error('Error fetching subHead:', error);
+                console.error('Error fetching account:', error);
             }
         };
-        
-        fetchSubHeads();
+    
+        const fetchAccountHead = async () => {
+            try {
+                const { data } = await axios.get('/accountHead');
+                setHeadData(data);
+            } catch (error) {
+                console.error("Error fetching account head data:", error);
+            }
+        };
+
+        fetchCompanyTypes()
+         fetchSubHeads();
         fetchHeads();
-        fetchAccount();
+        fetchAccount()
+        fetchAccountHead()
+
     }, []);
 
-    // Fetch company types
-    const fetchCompanyTypes = async () => {
-        try {
-            const response = await axios.get("/subHead"); // Adjust the endpoint if needed
-            setCompanyTypes(response.data);
-            console.log("Company Data", response.data);
-        } catch (error) {
-            console.error("Error fetching company types:", error);
-        }
-    };
+    
 
-    // Fetch heads based on selected company code
-    const fetchHeadForCompany = async (companyCode) => {
-        try {
-            const response = await axios.get(`/heads?companyCode=${companyCode}`);
-            setHeadTypes(response.data);  // Set filtered heads based on companyCode
-            console.log("Filtered Head Data", response.data);  // Verify correct data is fetched
-        } catch (error) {
-            console.error("Error fetching heads for company:", error);
-        }
-    };
-
-    const handleHeadTypeSelect = async (headName) => {
-        const selectedHead = headTypes.find(head => head.headName === headName);
-
-        if (selectedHead) {
-            setSelectedHeadType(headName);
-        }
-        setIsHeadTypeDropdownOpen(false);
-    };
-
-
-    // Handle company selection
-    const handleCompanySelect = async (event) => {
+    const handleCompanySelect = (event) => {
         const companyName = event.target.value;
         const selectedCompany = companyTypes.find(company => company.companyName === companyName);
-        const selectedCode = event.target.value;
-        setSelectedCompanyCode(selectedCode);
-
+        
         if (selectedCompany) {
             setSelectedCompanyType(companyName);
             setCompanyCode(selectedCompany.companyCode);
             fetchHeadForCompany(selectedCompany.companyCode);
         }
     };
-
-    // Handle subhead change and update code
-    const handleSubHeadChange = (e) => {
-        setSubHeadName(e.target.value);
-    };
-    
-    const filteredDestinations = selectedHeadType
-        ? subHeadTypes.filter(destination => destination.headName === selectedHeadType)
-        : [];
-
-        const filteredHeads = selectedCompanyType
-        ? headTypes.filter(destination => destination.companyName === selectedCompanyType)
-        : [];
-    
-    const handleAccountChange = (e) => {
-        setAccountName(e.target.value);
-  };
-
-
-    const fetchAccountHead = async () => {
+    const fetchHeadForCompany = async (companyCode) => {
         try {
-            const response = await axios.get("/accountHead");
-            setFetchAccount(Array.isArray(response.data) ? response.data : []);  // Set filtered heads based on companyCode
-            console.log("Filtered Sub Head Data", response.data);  // Verify correct data is fetched
+            const { data } = await axios.get(`/subHead?companyCode=${companyCode}`);
+            setHeadTypes(data);
         } catch (error) {
             console.error("Error fetching heads for company:", error);
         }
     };
+    const fetchSubHeadForHead = async (headCode) => {
+        try {
+            const { data } = await axios.get(`/subHead?headCode=${headCode}`);
+            setSubHeadTypes(data);
+        } catch (error) {
+            console.error("Error fetching sub heads for head:", error);
+        }
+    };
 
+   
+    const handleHeadTypeSelect = (event) => {
+        const headName = event.target.value;
+        const selectedHead = headTypes.find(head => head.headName === headName);
 
+        if (selectedHead) {
+            setSelectedHeadType(headName);
+            setHeadCode(selectedHead.headCode);
+            fetchSubHeadForHead(selectedHead.headCode);
+        }
+    };
 
+    
+
+    const handleSubHeadTypeSelect = (subHeadName) => {
+        const selectedSubHead = subHeadTypes.find(head => head.subHeadName === subHeadName);
+        if (selectedSubHead) setSelectedSubHeadType(subHeadName);
+    };
+
+   
+    const filteredDestinations = selectedHeadType
+        ? subHeadTypes.filter(destination => destination.headName === selectedHeadType)
+        : [];
+        
+
+        const filteredHeads = selectedCompanyType
+        ? headTypes.filter(destination => destination.companyName === selectedCompanyType)
+        : [];
+        console.log("data", headTypes);
+        
+    
+    const handleAccountChange = (e) => {
+        setAccountName(e.target.value);
+        // Generate the next subhead code based on current company and head codes
+  };
 
     const handleSave = async () => {
         if (!selectedHeadType || !selectedCompanyType) {
@@ -254,11 +236,12 @@ function AccountHead() {
             accountName,
             accountCode,
             balance,
-            amountCheck: amountCheck === "" ? null : amountCheck,
-            debitCheck: debitCheck === "" ? null : debitCheck,
+            amountCheck: amountCheck || null,
+            debitCheck: debitCheck || null,
             subHeadCode,
             date,
-            subHeadName, selectedSubHeadType,
+            subHeadName,
+            selectedSubHeadType,
             description,
         };
 
@@ -271,6 +254,7 @@ function AccountHead() {
             if (response.data.status === "200" || response.data.status === "201") {   
                 alert(response.data.message)
             }
+            alert(response.data.message)
             setAccountTypes([...accountTypes, response.data]);
             setSelectedCompanyType("");
             setSelectedSubHeadType("");
@@ -347,17 +331,17 @@ function AccountHead() {
                     </div>
                         {/* Head */}
                     <div className="grid grid-cols-2 gap-4 mb-4">
-                        <div>
+                    <div>
                             <label className="text-gray-800 font-semibold">Head</label>
                             <select
                                 value={selectedHeadType}
                                 onChange={handleHeadTypeSelect}
-                                className=" bg-white w-[22rem] border text-gray-800 rounded outline-none px-2 py-2 cursor-pointer"
+                                className="w-[22rem] border text-gray-800 rounded outline-none px-2 py-2 cursor-pointer"
                             >
-                                <option value="" disabled>Select a Head</option>
-                                {filteredHeads.map((head, index) => (
-                                    <option key={index} value={head.headName}>
-                                        {head.headName}
+                                <option value="" disabled>Select Main Head</option>
+                                {filteredHeads.map((company, index) => (
+                                    <option key={index} value={company.headName}>
+                                        {company.headName}
                                     </option>
                                 ))}
                             </select>
@@ -380,19 +364,38 @@ function AccountHead() {
                         <div className="grid grid-cols-2 gap-4 mb-4">
                         <div>
                             <label className="text-gray-800 font-semibold">Sub Head</label>
-                            <select
-                                value={selectedSubHeadType}
-                                onChange={handleSubHeadChange}
-                                className=" bg-white w-[22rem] border text-gray-800 rounded outline-none px-2 py-2 cursor-pointer"
-                            >
-                                <option value="" disabled>Select a Sub Head</option>
-                                {filteredDestinations.map((head, index) => (
-                                    <option key={index} value={head.subHeadName}>
-                                        {head.subHeadName}
-                                    </option>
-                                ))}
-                            </select>
+                            <div ref={dropdownRef} className="relative">
+                                <div
+                                    className="flex items-center justify-between w-[22rem] border rounded px-2 py-2 cursor-pointer"
+                                    onClick={toggleSubHeadTypeDropdown}
+                                >
+                                    <input
+                                        type="text"
+                                        className="bg-transparent text-gray-800 text-sm outline-none cursor-pointer w-full"
+                                        value={selectedSubHeadType || "Select Sub Head"}
+                                        readOnly
+                                    />
+                                    <span className="ml-2 text-gray-800">▼</span>
+                                </div>
+                                {isSubHeadTypeDropdownOpen && (
+                                    <div className="absolute mt-1 w-[22rem] bg-white shadow-lg rounded max-h-40 overflow-auto z-50">
+                                        <ul className="divide-y divide-gray-100">
+                                            {filteredDestinations.map((head, index) => (
+                                                <li
+                                                    className="px-4 py-2 text-gray-800 hover:bg-blue-100 cursor-pointer"
+                                                    key={index}
+                                                    onClick={() => handleSubHeadTypeSelect(head.subHeadName)}
+                                                >
+                                                    {head.subHeadName}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
                         </div>
+
+
                         </div>
 
 
@@ -524,8 +527,8 @@ function AccountHead() {
                         </tr>
                     </thead>
                     <tbody className="text-sm">
-                        {Array.isArray(fetchAccount) && fetchAccount.length > 0 ? (
-                            fetchAccount.map((facility, index) => (
+                        {Array.isArray(headData) && headData.length > 0 ? (
+                            headData.map((facility, index) => (
                                 <tr key={facility._id}>
                                     <td className="border px-4 py-2">{index + 1}</td>
                                     <td className="border px-4 py-2">{facility.accountCode}</td>

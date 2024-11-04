@@ -30,7 +30,7 @@ function Head() {
     useEffect(() => {
         const fetchHeads = async () => {
             try {
-                const response = await axios.get('heads'); // Adjust the URL as needed
+                const response = await axios.get('/heads'); // Adjust the URL as needed
                 const heads = response.data;
 
                 // Generate companyCode based on the number of companies
