@@ -89,7 +89,7 @@ function Head() {
 
     const fetchHead = async () => {
         try {
-            const response = await axios.get("/heads"); // Adjusted to match the router setup
+            const response = await axios.get(`${process.env.REACT_APP_API_URL}/heads`); 
             setfetchingHeadTypes(Array.isArray(response.data) ? response.data : []);
         } catch (error) {
             console.error("Error fetching packages types:", error);
