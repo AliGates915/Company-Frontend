@@ -9,17 +9,14 @@ function Head() {
     const [companyCode, setCompanyCode] = useState("");
     const [headTypes, setHeadTypes] = useState([]);
     const [fectchingHeadTypes, setfetchingHeadTypes] = useState([]);
-    const [companyTypes, setCompanyTypes] = useState([]); // Fixed state declaration
+    const [companyTypes, setCompanyTypes] = useState([]);
     const [isCompanyTypeDropdownOpen, setIsCompanyTypeDropdownOpen] = useState(false);
     const [selectedCompanyType, setSelectedCompanyType] = useState("");
     const [description, setDescription] = useState('');
     const [openHead, setOpenHead] = useState(false);
 
+    const dropdownRef = useRef(null);
 
-
-    const dropdownRef = useRef(null); // Ref for the dropdown
-
-    // Toggle function for dropdown
     const toggleCompanyTypeDropdown = () => {
         setIsCompanyTypeDropdownOpen((prev) => !prev);
     };
@@ -27,16 +24,15 @@ function Head() {
     const closeDropdowns = () => {
         setIsCompanyTypeDropdownOpen(false);
     };
+
     useEffect(() => {
         const fetchHeads = async () => {
             try {
-                // const response = await axios.get(`${process.env.REACT_APP_API_URL}/heads`); // Adjust the URL as needed
-                const response = await axios.get(` https://company-backend-delta.vercel.app/api/heads`); // Adjust the URL as needed
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/heads`);
                 const heads = response.data;
 
-                // Generate companyCode based on the number of companies
-                const newCodeNumber = heads.length + 1; // Assuming you're starting from 1
-                const formattedCode = String(newCodeNumber).padStart(2, '0'); // Format to "01", "02", etc.
+                const newCodeNumber = heads.length + 1;
+                const formattedCode = String(newCodeNumber).padStart(2, '0');
                 setHeadCode(formattedCode);
             } catch (error) {
                 console.error('Error fetching companies:', error);
@@ -50,7 +46,7 @@ function Head() {
 
         if (selectedCompany) {
             setSelectedCompanyType(companyName);
-            setCompanyCode(selectedCompany.companyCode); // Set the company code
+            setCompanyCode(selectedCompany.companyCode);
         }
 
         setIsCompanyTypeDropdownOpen(false);
@@ -79,7 +75,7 @@ function Head() {
 
     const fetchCompanyTypes = async () => {
         try {
-            const response = await axios.get("/companies"); // Adjust the endpoint as necessary
+            const response = await axios.get(`${process.env.REACT_APP_API_URL}/companies`);
             setCompanyTypes(response.data);
             console.log("Fetched company types:", response.data);
         } catch (error) {
@@ -89,7 +85,8 @@ function Head() {
 
     const fetchHead = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/heads`); 
+            const response = await axios.get(`${process.env.REACT_APP_API_URL}/heads`);
+            // const response = await axios.get(`https://company-backend-delta.vercel.app/api/heads`);
             setfetchingHeadTypes(Array.isArray(response.data) ? response.data : []);
         } catch (error) {
             console.error("Error fetching packages types:", error);
@@ -99,9 +96,6 @@ function Head() {
             }
         }
     };
-
-
-    // Placeholder for code
 
     const handleSave = async () => {
         if (!selectedCompanyType || !head || !description) {
@@ -115,24 +109,20 @@ function Head() {
             headName: head,
             headCode,
             description,
-
         };
 
-        console.log("Data to send to backend:", dataToSend);
-
         try {
-            const response = await axios.post("/heads", dataToSend); // Adjust the endpoint as necessary
-            console.log("Saved head response:", response.data);
-            alert("Data is successfully saved.")
+            const response = await axios.post(`${process.env.REACT_APP_API_URL}/heads`, dataToSend);
             setHeadTypes([...headTypes, response.data]);
             setSelectedCompanyType("");
             setHead("");
             setDescription("");
             setCompanyCode("");
             setHeadCode("");
+            alert("Data is successfully saved.");
         } catch (error) {
             console.error("Error saving head:", error);
-            alert(error)
+            alert(error);
         }
     };
 
@@ -141,7 +131,7 @@ function Head() {
         if (!updatedHeadName) return;
 
         try {
-            const response = await axios.put(`/heads/${id}`, {
+            const response = await axios.put(`${process.env.REACT_APP_API_URL}/heads/${id}`, {
                 head: updatedHeadName,
             });
             setHeadTypes(
@@ -164,7 +154,7 @@ function Head() {
             return;
 
         try {
-            await axios.delete(`/heads/${id}`); // Adjust the endpoint as necessary
+            await axios.delete(`${process.env.REACT_APP_API_URL}/heads/${id}`);
             setHeadTypes(headTypes.filter((head) => head._id !== id));
         } catch (error) {
             if (error.response && error.response.status === 401) {
@@ -172,6 +162,7 @@ function Head() {
             }
         }
     };
+
 
     return (
         <>
