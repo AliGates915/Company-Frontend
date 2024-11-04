@@ -85,8 +85,8 @@ function Head() {
 
     const fetchHead = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/heads`);
-            // const response = await axios.get(`https://company-backend-delta.vercel.app/api/heads`);
+            // const response = await axios.get(`${process.env.REACT_APP_API_URL}/heads`);
+            const response = await axios.get(`https://company-backend-delta.vercel.app/api/heads`);
             setfetchingHeadTypes(Array.isArray(response.data) ? response.data : []);
         } catch (error) {
             console.error("Error fetching packages types:", error);
